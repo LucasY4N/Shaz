@@ -1,69 +1,74 @@
 @echo off
-:: ============================================================
-::  Shaz AI — Instalação no Windows
-::  Resolve pyaudio sem precisar do Visual C++ Build Tools
-:: ============================================================
+title Shaz AI - Instalador Windows
+chcp 65001 >nul
 
-echo.
-echo  ⚡ Shaz AI — Setup Windows
-echo  ============================================================
+echo ============================================
+echo        Shaz AI - Instalador Windows
+echo ============================================
 echo.
 
-:: 1. Dependências principais (sem pyaudio)
-echo [1/4] Instalando dependencias principais...
-pip install -e ".[dev]"
+:: Verificar Python
+python --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ERRO: falha no pip install principal.
-    pause & exit /b 1
+    echo [ERROR] Python nao encontrado!
+    echo Baixe Python 3.11+ em: https://python.org/downloads
+    pause
+    exit /b 1
 )
 
-:: 2. pyaudio via pipwin (wheel pré-compilado para Windows)
+python --version
 echo.
-echo [2/4] Instalando pipwin...
-pip install pipwin
+
+:: Verificar pip
+pip --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo AVISO: pipwin falhou. Tentando wheel direto...
-    goto :wheel_fallback
+    echo [ERROR] pip nao encontrado!
+    pause
+    exit /b 1
 )
 
-echo [3/4] Instalando pyaudio via pipwin...
-pipwin install pyaudio
-if %errorlevel% neq 0 (
-    goto :wheel_fallback
-)
-goto :done
-
-:wheel_fallback
-:: Fallback: baixar wheel pré-compilado do repositório não oficial
-echo [3/4] Instalando pyaudio via wheel pre-compilado...
-pip install pyaudio --only-binary=:all:
-if %errorlevel% neq 0 (
-    echo.
-    echo  AVISO: pyaudio nao instalado automaticamente.
-    echo  Para voz, instale manualmente:
-    echo    1. Acesse: https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
-    echo    2. Baixe o .whl para sua versao do Python (cp314 = Python 3.14)
-    echo    3. Execute: pip install PyAudio-0.2.14-cp314-cp314-win_amd64.whl
-    echo.
-    echo  O restante do Shaz AI funciona sem voz.
-)
-
-:done
+:: Atualizar pip
+echo [1/4] Atualizando pip...
+python -m pip install --upgrade pip -q
 echo.
+
+:: Instalar dependencias
+echo [2/4] Instalando dependencias principais...
+pip install -e ".[full]" --quiet
+if %errorlevel% neq 0 (
+    echo [WARNING] Algumas dependencias podem nao ter sido instaladas.
+)
+echo.
+
+:: Instalar pyaudio (Windows)
+echo [3/4] Instalando pyaudio...
+pip install pipwin -q
+pipwin install pyaudio -q 2>nul
+if %errorlevel% neq 0 (
+    echo [INFO] pyaudio nao instalado via pipwin.
+    echo Tentando metodo alternativo...
+    pip install pyaudio -q 2>nul
+)
+echo.
+
+:: Verificar instalacao
 echo [4/4] Verificando instalacao...
-python -c "import motor, pymongo, pydantic, loguru, rich, typer; print('  OK - dependencias principais OK')"
-python -c "import pyaudio; print('  OK - pyaudio OK')" 2>nul || echo   AVISO - pyaudio ausente (voz desabilitada)
+python -c "import sys; print(f'Python {sys.version}')" 2>nul
+python -c "import rich; print('rich: OK')" 2>nul
+python -c "import dotenv; print('dotenv: OK')" 2>nul
+python -c "import httpx; print('httpx: OK')" 2>nul
 
 echo.
-echo  ============================================================
-echo  ✅ Instalacao concluida!
+echo ============================================
+echo     Instalacao concluida!
+echo ============================================
 echo.
-echo  Proximos passos:
-echo    1. Copie .env.example para .env e preencha suas chaves
-echo    2. Inicie o MongoDB:  docker run -d -p 27017:27017 mongo:7
-echo    3. Use a CLI:
-echo         python main.py chat "Ola!"
-echo         python main.py dashboard
-echo  ============================================================
+echo Para iniciar o Shaz AI:
+echo   python main.py            (Modo Desktop)
+echo   python main.py --cli      (Modo Terminal)
+echo   python main.py --install  (Verificar dependencias)
+echo.
+echo Configure sua chave de API no arquivo .env
+echo (copie .env.example para .env e edite)
 echo.
 pause

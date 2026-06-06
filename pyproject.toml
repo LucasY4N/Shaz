@@ -4,28 +4,24 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shaz-ai"
-version = "0.1.0"
-description = "Shaz AI - Assistente inteligente com arquitetura hexagonal"
+version = "1.0.0"
+description = "Shaz AI - Assistente virtual avançada com voz, personalidade, memória e interface desktop"
 requires-python = ">=3.11"
 dependencies = [
-    "motor>=3.3",
-    "pymongo>=4.6",
+    "PySide6>=6.6",
+    "faster-whisper>=1.0",
+    "edge-tts>=6.1",
+    "sounddevice>=0.4",
+    "soundfile>=0.12",
+    "pygame>=2.5",
+    "rich>=13.7",
     "python-dotenv>=1.0",
     "httpx>=0.27",
-    "pydantic>=2.6",
-    "pydantic-settings>=2.2",
-    "loguru>=0.7",
-    "google-genai>=2.8",
+    "openai>=1.6",
     "groq>=0.9",
-    "speechrecognition>=3.10",
-    "pyttsx3>=2.90",
-    # pyaudio NÃO está aqui — instale separado (veja README)
-    "yt-dlp>=2024.3",
-    "youtube-transcript-api>=0.6",
-    "rich>=13.7",
+    "google-genai>=2.8",
     "psutil>=5.9",
-    "typer>=0.12",
-    "tenacity>=8.2",
+    "numpy>=1.24",
 ]
 
 [project.optional-dependencies]
@@ -38,9 +34,22 @@ dev = [
     "pre-commit>=3.7",
 ]
 voice = [
-    # Instale após o pip install principal — requer wheel pré-compilado no Windows
-    # Veja README: pip install pipwin && pipwin install pyaudio
+    "TTS",
+    "piper-tts",
+    "pyaudio",
 ]
+full = [
+    "TTS",
+    "piper-tts",
+    "pyaudio",
+    "speechrecognition>=3.10",
+    "pyttsx3>=2.90",
+]
+
+[project.scripts]
+shaz = "shaz.main:main_cli"
+shaz-desktop = "shaz.main:main_desktop"
+shaz-install = "shaz.main:main_install"
 
 [tool.ruff]
 line-length = 88
@@ -62,4 +71,4 @@ testpaths = ["tests"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["core*", "repositories*", "providers*", "services*", "integrations*", "infrastructure*", "dashboard*", "tools*", "plugins*"]
+include = ["shaz*", "core*", "repositories*", "providers*", "services*", "integrations*", "infrastructure*", "dashboard*", "tools*", "plugins*"]

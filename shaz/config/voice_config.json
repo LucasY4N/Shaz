@@ -1,0 +1,26 @@
+{
+  "voice_model": "xtts",
+  "speaker": "shaz",
+  "language": "pt",
+  "xtts": {
+    "model_path": "models/xtts",
+    "speaker_wav": "assets/voices/shaz_reference.wav",
+    "temperature": 0.75,
+    "speed": 1.0,
+    "enable_text_splitting": true
+  },
+  "piper": {
+    "model_path": "models/piper",
+    "voice": "pt_BR-faber-medium",
+    "noise_scale": 0.667,
+    "noise_w": 0.8,
+    "length_scale": 1.0
+  },
+  "edge": {
+    "voice": "pt-BR-FranciscaNeural",
+    "rate": "+0%",
+    "volume": "+0%",
+    "pitch": "+0Hz"
+  },
+  "fallback_chain": ["xtts", "piper", "edge"]
+}

@@ -1,0 +1,91 @@
+{
+  "app": {
+    "name": "Shaz AI",
+    "version": "1.0.0",
+    "language": "pt-BR",
+    "theme": "dark",
+    "window_width": 1200,
+    "window_height": 800,
+    "start_minimized": false,
+    "auto_start_voice": false
+  },
+  "llm": {
+    "provider": "openai",
+    "openai": {
+      "model": "gpt-4o-mini",
+      "temperature": 0.7,
+      "max_tokens": 4096,
+      "top_p": 0.9
+    },
+    "openrouter": {
+      "model": "openai/gpt-4o-mini",
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "groq": {
+      "model": "llama-3.3-70b-versatile",
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "gemini": {
+      "model": "gemini-2.5-flash",
+      "temperature": 0.7,
+      "max_tokens": 4096
+    },
+    "ollama": {
+      "model": "llama3.2:latest",
+      "base_url": "http://localhost:11434",
+      "temperature": 0.7,
+      "max_tokens": 4096
+    }
+  },
+  "voice": {
+    "stt_engine": "whisper",
+    "stt_model": "base",
+    "stt_language": "pt",
+    "stt_energy_threshold": 1000,
+    "stt_pause_threshold": 1.0,
+    "stt_phrase_time_limit": 15.0,
+    "stt_adjust_for_ambient_noise": true,
+    "tts_engine": "edge",
+    "tts_voice": "pt-BR-FranciscaNeural",
+    "tts_speed": 1.0,
+    "tts_volume": 1.0,
+    "vad_enabled": true,
+    "vad_threshold": 0.5
+  },
+  "memory": {
+    "engine": "sqlite",
+    "db_path": "data/memory.db",
+    "max_history_per_conversation": 100,
+    "autosave_interval": 60
+  },
+  "audio": {
+    "sample_rate": 16000,
+    "channels": 1,
+    "chunk_size": 1024,
+    "input_device": null,
+    "output_device": null
+  },
+  "logs": {
+    "level": "INFO",
+    "max_file_size_mb": 10,
+    "retention_days": 7,
+    "show_timestamps": true,
+    "categories": {
+      "INFO": true,
+      "VOICE": true,
+      "STT": true,
+      "TTS": true,
+      "MEMORY": true,
+      "API": true,
+      "SYSTEM": true,
+      "ERROR": true,
+      "DEBUG": false
+    }
+  },
+  "update": {
+    "check_on_startup": true,
+    "auto_update": false
+  }
+}
