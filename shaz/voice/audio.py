@@ -5,11 +5,13 @@ Gerencia microfone e saída de áudio com sounddevice/pyaudio/pygame.
 """
 from __future__ import annotations
 
-import asyncio
+import queue
 import io
 import os
 import tempfile
+import time
 import wave
+from collections import deque
 from pathlib import Path
 from typing import Any, Callable, Optional
 
@@ -40,6 +42,7 @@ class AudioRecorder:
         self._sample_rate = self._config.audio_sample_rate
         self._channels = self._config.audio_channels
         self._chunk_size = self._config.audio_chunk_size
+        self._input_device = self._config.audio_input_device
         self._is_recording = False
         self._callback: Optional[Callable[[bytes], None]] = None
 
@@ -79,20 +82,89 @@ class AudioRecorder:
         try:
             import numpy as np
 
+            audio_queue: queue.Queue[Any] = queue.Queue()
+            pre_roll_chunks = max(1, int((self._sample_rate / self._chunk_size) * 0.4))
+            pre_roll: deque[Any] = deque(maxlen=pre_roll_chunks)
+            speech_chunks: list[Any] = []
+
+            energy_threshold = float(self._config.get("voice.stt_energy_threshold", 1000))
+            pause_threshold = float(self._config.get("voice.stt_pause_threshold", 1.0))
+            adjust_noise = bool(self._config.get("voice.stt_adjust_for_ambient_noise", True))
+            phrase_limit = float(self._config.get("voice.stt_phrase_time_limit", phrase_limit))
+
+            def on_audio(indata: Any, frames: int, time_info: Any, status: Any) -> None:
+                if status:
+                    logger.warning(f"[Audio] Input status: {status}")
+                audio_queue.put(indata.copy())
+
             logger.stt("Listening for speech...")
 
-            # Grava áudio
-            recording = sd.rec(
-                int(phrase_limit * self._sample_rate),
+            with sd.InputStream(
                 samplerate=self._sample_rate,
                 channels=self._channels,
-                dtype='int16',
-            )
-            sd.wait()
+                dtype="int16",
+                blocksize=self._chunk_size,
+                device=self._input_device,
+                callback=on_audio,
+            ):
+                if adjust_noise:
+                    calibration_chunks: list[Any] = []
+                    calibration_end = time.monotonic() + 0.6
+                    while time.monotonic() < calibration_end:
+                        try:
+                            calibration_chunks.append(audio_queue.get(timeout=0.1))
+                        except queue.Empty:
+                            pass
+                    if calibration_chunks:
+                        ambient_level = max(self._audio_rms(chunk) for chunk in calibration_chunks)
+                        energy_threshold = max(energy_threshold, ambient_level * 2.0)
+                        logger.stt(f"Ambient noise calibrated | threshold={energy_threshold:.0f}")
 
-            # Converte para WAV bytes
+                start_deadline = time.monotonic() + timeout
+                started_at: Optional[float] = None
+                last_voice_at: Optional[float] = None
+
+                while True:
+                    now = time.monotonic()
+
+                    if started_at is None and now >= start_deadline:
+                        logger.stt("Listening timed out without speech")
+                        return None
+
+                    if started_at is not None and now - started_at >= phrase_limit:
+                        logger.stt("Phrase time limit reached")
+                        break
+
+                    try:
+                        chunk = audio_queue.get(timeout=0.1)
+                    except queue.Empty:
+                        continue
+
+                    energy = self._audio_rms(chunk)
+
+                    if started_at is None:
+                        pre_roll.append(chunk)
+                        if energy >= energy_threshold:
+                            started_at = now
+                            last_voice_at = now
+                            speech_chunks.extend(pre_roll)
+                            logger.stt("Speech detected")
+                        continue
+
+                    speech_chunks.append(chunk)
+                    if energy >= energy_threshold:
+                        last_voice_at = now
+                    elif last_voice_at is not None and now - last_voice_at >= pause_threshold:
+                        logger.stt("Silence detected, finishing recording")
+                        break
+
+            if not speech_chunks:
+                return None
+
+            recording = np.concatenate(speech_chunks, axis=0)
+
             buffer = io.BytesIO()
-            with wave.open(buffer, 'wb') as wf:
+            with wave.open(buffer, "wb") as wf:
                 wf.setnchannels(self._channels)
                 wf.setsampwidth(2)  # 16-bit
                 wf.setframerate(self._sample_rate)
@@ -109,6 +181,16 @@ class AudioRecorder:
             logger.error(f"[Audio] Recording error: {e}")
             return None
 
+    @staticmethod
+    def _audio_rms(chunk: Any) -> float:
+        """Calcula energia RMS de um bloco PCM int16."""
+        import numpy as np
+
+        values = chunk.astype(np.float32)
+        if values.size == 0:
+            return 0.0
+        return float(np.sqrt(np.mean(np.square(values))))
+
     def record_to_file(self, filepath: str, duration: float = 5.0) -> Optional[str]:
         """Grava áudio diretamente para um arquivo WAV."""
         if not SOUNDDEVICE_AVAILABLE:
@@ -122,6 +204,7 @@ class AudioRecorder:
                 samplerate=self._sample_rate,
                 channels=self._channels,
                 dtype='int16',
+                device=self._input_device,
             )
             sd.wait()
 
@@ -147,7 +230,9 @@ class AudioPlayer:
     Reprodução de áudio usando pygame (ou fallback).
     """
 
-    def __init__(self) -> None:
+    def __init__(self, config: Optional[Config] = None) -> None:
+        self._config = config or Config()
+        self._output_device = self._config.audio_output_device
         self._is_playing = False
         self._pygame_initialized = False
 
@@ -168,21 +253,28 @@ class AudioPlayer:
     def _play_pygame(self, audio_bytes: bytes) -> None:
         """Reproduz usando pygame."""
         try:
-            import tempfile
-
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            suffix = self._detect_audio_suffix(audio_bytes)
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
                 f.write(audio_bytes)
                 temp_path = f.name
 
             self._is_playing = True
-            sound = pygame.mixer.Sound(temp_path)
-            sound.play()
+            if suffix == ".mp3":
+                pygame.mixer.music.load(temp_path)
+                pygame.mixer.music.play()
 
-            # Espera terminar
-            while pygame.mixer.get_busy():
-                pygame.time.wait(100)
+                while pygame.mixer.music.get_busy():
+                    pygame.time.wait(100)
 
-            sound.stop()
+                pygame.mixer.music.stop()
+            else:
+                sound = pygame.mixer.Sound(temp_path)
+                sound.play()
+
+                while pygame.mixer.get_busy():
+                    pygame.time.wait(100)
+
+                sound.stop()
             self._is_playing = False
 
             # Limpa arquivo temporário
@@ -198,7 +290,8 @@ class AudioPlayer:
     def _play_tempfile(self, audio_bytes: bytes) -> None:
         """Reproduz salvando em arquivo temporário e usando comando do sistema."""
         try:
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+            suffix = self._detect_audio_suffix(audio_bytes)
+            with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
                 f.write(audio_bytes)
                 temp_path = f.name
 
@@ -227,13 +320,26 @@ class AudioPlayer:
             try:
                 import soundfile as sf
                 data, sr = sf.read(filepath)
-                sd.play(data, sr)
+                sd.play(data, sr, device=self._output_device)
                 sd.wait()
                 return
             except Exception:
                 pass
 
         logger.warning("[Audio] No playback method available. Install pygame or soundfile.")
+
+    @staticmethod
+    def _detect_audio_suffix(audio_bytes: bytes) -> str:
+        """Detecta formato básico para salvar temporário com extensão correta."""
+        if audio_bytes.startswith(b"RIFF"):
+            return ".wav"
+        if audio_bytes.startswith(b"ID3") or (
+            len(audio_bytes) > 2 and audio_bytes[0] == 0xFF and audio_bytes[1] & 0xE0 == 0xE0
+        ):
+            return ".mp3"
+        if audio_bytes.startswith(b"OggS"):
+            return ".ogg"
+        return ".wav"
 
     def play_file(self, filepath: str) -> None:
         """Reproduz arquivo de áudio."""
@@ -259,7 +365,7 @@ class AudioManager:
     def __init__(self, config: Optional[Config] = None) -> None:
         self.config = config or Config()
         self.recorder = AudioRecorder(config)
-        self.player = AudioPlayer()
+        self.player = AudioPlayer(config)
 
     def record_and_transcribe(
         self,

@@ -9,6 +9,7 @@ import asyncio
 import os
 import signal
 import sys
+import threading
 from pathlib import Path
 from typing import Optional
 
@@ -134,7 +135,7 @@ def run_desktop() -> None:
     """
     import sys as _sys
     from PySide6.QtWidgets import QApplication
-    from PySide6.QtCore import QTimer
+    from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
     # Inicializa a aplicacao
     app = get_app()
@@ -157,49 +158,83 @@ def run_desktop() -> None:
     # Conecta eventos do chat
     chat = dashboard.get_chat_widget()
 
+    class UiBridge(QObject):
+        status_changed = Signal(str)
+        assistant_response = Signal(str)
+
+        def __init__(self, dashboard_widget, chat_widget) -> None:
+            super().__init__()
+            self._dashboard_widget = dashboard_widget
+            self._chat_widget = chat_widget
+
+        @Slot(str)
+        def apply_status(self, status: str) -> None:
+            self._dashboard_widget.update_status(status)
+
+        @Slot(str)
+        def add_assistant_response(self, response: str) -> None:
+            self._chat_widget.add_message("assistant", response)
+
+    ui_bridge = UiBridge(dashboard, chat)
+    ui_bridge.status_changed.connect(ui_bridge.apply_status)
+    ui_bridge.assistant_response.connect(ui_bridge.add_assistant_response)
+
     async def async_send(text: str) -> str:
         return await brain.process_message(text) if brain else "Brain indisponivel"
 
     def on_send(text: str) -> None:
         """Dispara quando usuario envia mensagem pelo chat."""
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.ensure_future(async_send(text))
-            else:
-                response = asyncio.run(async_send(text))
-                chat.add_message("assistant", response)
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            response = loop.run_until_complete(async_send(text))
-            chat.add_message("assistant", response)
+        def run_message() -> None:
+            try:
+                asyncio.run(async_send(text))
+            except Exception as e:
+                logger.error(f"[UI] Error processing chat message: {e}")
+                ui_bridge.assistant_response.emit(
+                    f"Desculpe, ocorreu um erro ao processar sua mensagem: {e}"
+                )
+
+        threading.Thread(
+            target=run_message,
+            name="ShazChatMessage",
+            daemon=True,
+        ).start()
 
     chat.set_on_send(on_send)
 
     # Evento de voz: quando ativar o microfone no chat
-    async def start_voice():
-        if brain and not brain.is_voice_active:
-            dashboard.update_status("listening")
-            await brain.process_voice()
+    voice_thread: Optional[threading.Thread] = None
+
+    def run_voice_loop() -> None:
+        if not brain:
+            return
+        try:
+            asyncio.run(brain.process_voice())
+        except Exception as e:
+            logger.error(f"[UI] Voice loop error: {e}")
+            ui_bridge.assistant_response.emit(f"Erro no modo de voz: {e}")
+        finally:
+            ui_bridge.status_changed.emit("online")
 
     def on_voice_activate():
         """Ativou o modo de voz."""
+        nonlocal voice_thread
         if brain:
             logger.voice("Modo de voz ATIVADO pelo usuario")
-            dashboard.update_status("listening")
-            try:
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    asyncio.ensure_future(start_voice())
-            except Exception:
-                pass
+            ui_bridge.status_changed.emit("listening")
+            if voice_thread and voice_thread.is_alive():
+                return
+            voice_thread = threading.Thread(
+                target=run_voice_loop,
+                name="ShazVoiceLoop",
+                daemon=True,
+            )
+            voice_thread.start()
 
     def on_voice_deactivate():
         """Desativou o modo de voz."""
         if brain:
             brain.stop_voice_mode()
-            dashboard.update_status("online")
+            ui_bridge.status_changed.emit("online")
             logger.voice("Modo de voz DESATIVADO pelo usuario")
 
     chat.voice_activated.connect(on_voice_activate)
@@ -232,18 +267,11 @@ def run_desktop() -> None:
         dashboard.update_status("online")
         logger.system("Sistema reiniciado. Pronto para uso!")
 
-    def update_status(status: str) -> None:
-        dashboard.update_status(status)
-
     if brain:
         dashboard.set_on_power_toggle(on_power_toggle)
         dashboard.set_on_restart(on_restart)
-        brain.set_on_status_change(update_status)
-
-        def on_brain_response(response: str) -> None:
-            chat.add_message("assistant", response)
-
-        brain.set_on_response(on_brain_response)
+        brain.set_on_status_change(ui_bridge.status_changed.emit)
+        brain.set_on_response(ui_bridge.assistant_response.emit)
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 

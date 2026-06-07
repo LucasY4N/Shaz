@@ -9,7 +9,12 @@ import json
 import os
 from pathlib import Path
 from typing import Any, Dict, Optional
-from dotenv import load_dotenv
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    def load_dotenv(*args: Any, **kwargs: Any) -> bool:
+        return False
 
 
 class Config:
@@ -179,6 +184,14 @@ class Config:
     @property
     def audio_chunk_size(self) -> int:
         return self._settings.get("audio", {}).get("chunk_size", 1024)
+
+    @property
+    def audio_input_device(self) -> Any:
+        return self._settings.get("audio", {}).get("input_device")
+
+    @property
+    def audio_output_device(self) -> Any:
+        return self._settings.get("audio", {}).get("output_device")
 
     # ─── Log Settings ─────────────────────────────────────────────────────
 

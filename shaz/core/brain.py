@@ -188,6 +188,11 @@ class ShazBrain:
         """
         if not self._stt.is_available:
             logger.error("[Voice] STT not available. Cannot start voice mode.")
+            self._notify_status("online")
+            self._notify_response(
+                "Nao consegui iniciar o modo de voz: STT indisponivel. "
+                "Instale faster-whisper ou speechrecognition."
+            )
             return
 
         self._voice_mode = True

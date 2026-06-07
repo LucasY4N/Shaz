@@ -200,7 +200,7 @@ class FasterWhisperSTT:
 
     @property
     def is_available(self) -> bool:
-        return FASTER_WHISPER_AVAILABLE and self._model is not None
+        return (FASTER_WHISPER_AVAILABLE and self._model is not None) or SR_AVAILABLE
 
 
 # ─── Factory ──────────────────────────────────────────────────────────────
