@@ -315,7 +315,29 @@ class AudioPlayer:
 
     def _play_file(self, filepath: str) -> None:
         """Reproduz arquivo de áudio usando bibliotecas disponíveis."""
-        # Tenta sounddevice primeiro
+        # 1. Se for Windows, tenta usar o MCI (winmm.dll) que toca MP3 e WAV nativamente sem dependências
+        if os.name == 'nt':
+            try:
+                import ctypes
+                winmm = ctypes.windll.winmm
+                abs_path = os.path.abspath(filepath)
+                alias = f"shaz_audio_{int(time.time() * 1000)}"
+                
+                open_cmd = f'open "{abs_path}" alias {alias}'
+                if abs_path.lower().endswith('.mp3'):
+                    open_cmd += ' type MPEGVideo'
+                
+                ret = winmm.mciSendStringW(open_cmd, None, 0, None)
+                if ret == 0:
+                    try:
+                        winmm.mciSendStringW(f'play {alias} wait', None, 0, None)
+                    finally:
+                        winmm.mciSendStringW(f'close {alias}', None, 0, None)
+                    return
+            except Exception as e:
+                logger.warning(f"[Audio] MCI playback failed: {e}")
+
+        # 2. Fallback para sounddevice + soundfile (só funciona bem para WAV)
         if SOUNDDEVICE_AVAILABLE:
             try:
                 import soundfile as sf
@@ -323,8 +345,8 @@ class AudioPlayer:
                 sd.play(data, sr, device=self._output_device)
                 sd.wait()
                 return
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"[Audio] sounddevice playback failed: {e}")
 
         logger.warning("[Audio] No playback method available. Install pygame or soundfile.")
 

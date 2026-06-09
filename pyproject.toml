@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "shaz-ai"
 version = "1.0.0"
 description = "Shaz AI - Assistente virtual avançada com voz, personalidade, memória e interface desktop"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 dependencies = [
     "PySide6>=6.6",
     "faster-whisper>=1.0",
@@ -58,10 +58,10 @@ ignore = ["E501"]
 
 [tool.black]
 line-length = 88
-target-version = ["py311"]
+target-version = ["py310"]
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.10"
 strict = true
 ignore_missing_imports = true
 

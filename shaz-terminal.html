@@ -210,6 +210,42 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 /* scrollbar global */
 ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,79,163,0.2);border-radius:2px;}
+
+/* ── TERMINAL ── */
+.term-wrap{display:flex;flex-direction:column;height:100%;}
+.term-header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.term-header-left{display:flex;align-items:center;gap:10px;}
+.term-dots{display:flex;gap:6px;}
+.term-dot{width:12px;height:12px;border-radius:50%;}
+.term-dot.red{background:#ef4444;}.term-dot.yellow{background:#f59e0b;}.term-dot.green{background:#10b981;}
+.term-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--pink);letter-spacing:3px;}
+.term-cwd{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.term-actions{display:flex;gap:6px;}
+.term-out{flex:1;overflow-y:auto;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.85;background:var(--bg-deep);word-break:break-all;}
+.term-out::-webkit-scrollbar{width:3px;}
+.term-out::-webkit-scrollbar-thumb{background:rgba(255,79,163,0.15);}
+.term-line{display:block;animation:termFade .2s ease-out;}
+@keyframes termFade{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
+.term-line.cmd{color:var(--pink);}
+.term-line.out{color:#d4d4d4;}
+.term-line.err{color:var(--red);}
+.term-line.info{color:var(--cyan);}
+.term-line.warn{color:var(--yellow);}
+.term-line.success{color:var(--green);}
+.term-line.system{color:var(--purple);}
+.term-line.blank{height:6px;display:block;}
+.term-input-bar{flex-shrink:0;border-top:1px solid var(--border);background:var(--bg-panel);padding:10px 20px;display:flex;align-items:center;gap:10px;}
+.term-prompt{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--pink);white-space:nowrap;flex-shrink:0;text-shadow:0 0 8px rgba(255,79,163,0.5);}
+.term-prompt span{color:var(--cyan);}
+.term-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;caret-color:var(--pink);}
+.term-input::placeholder{color:var(--muted);}
+.term-send{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;flex-shrink:0;transition:all .2s;box-shadow:0 0 12px rgba(255,79,163,0.3);}
+.term-send:hover{transform:scale(1.08);}
+.term-kill{padding:0 12px;height:32px;border-radius:8px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.08);color:var(--red);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:none;}
+.term-kill.visible{display:flex;align-items:center;gap:5px;}
+.term-kill:hover{background:rgba(239,68,68,0.2);border-color:var(--red);}
+.term-cursor{display:inline-block;width:8px;height:14px;background:var(--pink);vertical-align:middle;animation:termBlink .8s step-end infinite;margin-left:2px;}
+@keyframes termBlink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
 <body>
@@ -482,15 +518,50 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
     <!-- ── TERMINAL AGENTE ── -->
     <div class="panel" id="panel-terminal">
-      <div class="panel-inner" style="padding:0;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-          <div class="p-title" style="margin:0">⌨ TERMINAL AGENTE</div>
-          <button class="tbtn" onclick="clearTerminal()">LIMPAR</button>
+      <div class="term-wrap">
+
+        <!-- Header -->
+        <div class="term-header">
+          <div class="term-header-left">
+            <div class="term-dots">
+              <div class="term-dot red"></div>
+              <div class="term-dot yellow"></div>
+              <div class="term-dot green"></div>
+            </div>
+            <div>
+              <div class="term-title">TERMINAL AGENTE</div>
+              <div class="term-cwd" id="termCwd">shaz@nexus:~</div>
+            </div>
+          </div>
+          <div class="term-actions">
+            <button class="term-kill" id="termKillBtn" onclick="termKill()">⏹ KILL</button>
+            <button class="tbtn" onclick="clearTerminal()">LIMPAR</button>
+          </div>
         </div>
-        <div id="termOut" style="font-family:'Share Tech Mono',monospace;font-size:11px;padding:16px 20px;color:#e0e0e0;line-height:1.8;overflow-y:auto;height:calc(100vh - 160px);">
-          <span style="color:var(--pink)">[SHAZ NEXUS]</span> Terminal do servidor Python<br>
-          <span style="color:var(--cyan)">[INFO]</span> Conecte-se ao backend para logs reais<br>
+
+        <!-- Output -->
+        <div id="termOut" class="term-out">
+          <span class="term-line system">[SHAZ NEXUS v3.0] Terminal interativo inicializado.</span>
+          <span class="term-line info">[INFO] Conecte-se ao backend Python para executar comandos reais.</span>
+          <span class="term-line info">[INFO] Use ↑ / ↓ para navegar no histórico de comandos.</span>
+          <span class="term-line blank"></span>
         </div>
+
+        <!-- Input bar -->
+        <div class="term-input-bar">
+          <span class="term-prompt">shaz<span>@nexus</span>:~$</span>
+          <input
+            id="termInput"
+            class="term-input"
+            type="text"
+            placeholder="Digite um comando..."
+            autocomplete="off"
+            spellcheck="false"
+            onkeydown="termKeyDown(event)"
+          />
+          <button class="term-send" onclick="termSend()" title="Enviar">➤</button>
+        </div>
+
       </div>
     </div>
 
@@ -583,8 +654,13 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <script>
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const PASS = '200817';
-const API_BASE = window.location.origin; // http://localhost:8765
-const WS_URL = `ws://${window.location.host}/ws`;
+
+// Quando rodando dentro do Electron (file://), location.origin = 'null'
+// Nesse caso, aponta para o backend Python em localhost:8765
+const IS_ELECTRON = typeof window.electronAPI !== 'undefined' || window.location.protocol === 'file:';
+const BACKEND_HOST = 'localhost:8765';
+const API_BASE = IS_ELECTRON ? `http://${BACKEND_HOST}` : window.location.origin;
+const WS_URL   = IS_ELECTRON ? `ws://${BACKEND_HOST}/ws` : `ws://${window.location.host}/ws`;
 
 let convHistory = [];
 let isProc = false;
@@ -672,30 +748,47 @@ function handleWSMessage(data) {
     case 'connected':
       addLog('INFO', '🎯 ' + data.message, 'cyan');
       break;
-      
+
     case 'status':
       updateStatusDot(data.status);
       break;
-      
+
     case 'response':
-      // Resposta do chat via WS (usamos REST, mas podemos receber broadcast)
-      // Não duplicar se já foi adicionado pelo REST
+      // Resposta do chat via WS — não duplicar se já foi adicionado pelo REST
       break;
-      
+
     case 'chat':
       addLog('INFO', '📨 Mensagem processada pelo backend', 'green');
       break;
-      
+
     case 'cleared':
       addLog('INFO', 'Histórico limpo pelo backend', 'yellow');
       break;
-      
+
     case 'voice_set':
       addLog('INFO', 'Voz alterada: ' + data.voice, 'cyan');
       break;
-      
+
     case 'engine_set':
       addLog('INFO', 'Engine TTS alterado: ' + data.engine, 'cyan');
+      break;
+
+    // ── Terminal output events ──
+    case 'terminal_out':
+      termAppendLine(data.text || '', 'out');
+      break;
+
+    case 'terminal_err':
+      termAppendLine(data.text || '', 'err');
+      break;
+
+    case 'terminal_done':
+      termSetRunning(false);
+      termAppendLine('', 'blank');
+      break;
+
+    case 'terminal_cwd':
+      document.getElementById('termCwd').textContent = 'shaz@nexus:' + (data.cwd || '~');
       break;
   }
 }
@@ -818,6 +911,7 @@ function goPanel(id,el){
   if(id==='memoria')renderMemory();
   if(id==='logs')renderLogs();
   if(id==='cerebro')updateFromBackend();
+  if(id==='terminal')onTerminalOpen();
 }
 
 // ── MONITOR ──────────────────────────────────────────────────────────────────
@@ -971,7 +1065,14 @@ function filterLogs(f) {
   renderLogs();
 }
 function clearLogs(){logEntries=[];renderLogs();}
-function clearTerminal(){document.getElementById('termOut').innerHTML = '<span style="color:var(--muted)">Terminal limpo.</span><br>';}
+
+function clearTerminal() {
+  const out = document.getElementById('termOut');
+  out.innerHTML = [
+    '<span class="term-line system">[SHAZ NEXUS] Terminal limpo.</span>',
+    '<span class="term-line blank"></span>',
+  ].join('');
+}
 
 // ── ENGINE / VOICE ────────────────────────────────────────────────────────────
 async function setEngine(e, btn) {
@@ -1246,6 +1347,169 @@ async function toggleVoiceMode() {
       addLog('ERROR', 'Falha ao desativar voz', 'red');
     }
   }
+}
+
+// ── TERMINAL INTERATIVO ──────────────────────────────────────────────────────
+let termHistory = [];   // histórico de comandos
+let termHistIdx = -1;   // posição atual no histórico
+let termRunning = false; // processo em execução
+
+function termAppendLine(text, type = 'out') {
+  const out = document.getElementById('termOut');
+  const span = document.createElement('span');
+  span.className = 'term-line ' + type;
+
+  if (type === 'blank') {
+    // linha vazia visual
+  } else {
+    // Coloração básica de palavras-chave
+    span.innerHTML = termColorize(text);
+  }
+
+  out.appendChild(span);
+  out.scrollTop = out.scrollHeight;
+}
+
+function termColorize(text) {
+  // Escapa HTML
+  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Destaca paths, erros, warnings, etc.
+  return safe
+    .replace(/(ERROR|ERRO|Exception|Traceback)/gi, '<span style="color:var(--red);font-weight:700">$1</span>')
+    .replace(/(WARNING|WARN|Atenção)/gi, '<span style="color:var(--yellow)">$1</span>')
+    .replace(/(SUCCESS|OK|✅|✓)/gi, '<span style="color:var(--green)">$1</span>')
+    .replace(/(\/[\w./-]+)/g, '<span style="color:var(--cyan)">$1</span>');
+}
+
+function termSetRunning(state) {
+  termRunning = state;
+  const killBtn = document.getElementById('termKillBtn');
+  if (killBtn) killBtn.classList.toggle('visible', state);
+  const inp = document.getElementById('termInput');
+  if (inp) inp.placeholder = state ? 'Aguardando processo...' : 'Digite um comando...';
+}
+
+function termSend() {
+  const inp = document.getElementById('termInput');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+
+  inp.value = '';
+
+  // Adiciona ao histórico
+  termHistory.unshift(cmd);
+  if (termHistory.length > 100) termHistory.pop();
+  termHistIdx = -1;
+
+  // Exibe o comando digitado
+  termAppendLine('$ ' + cmd, 'cmd');
+
+  // Comandos locais
+  if (cmd === 'clear' || cmd === 'cls') { clearTerminal(); return; }
+  if (cmd === 'help') {
+    const cmds = [
+      '  clear / cls  — Limpa o terminal',
+      '  help         — Mostra esta ajuda',
+      '  status       — Status do backend',
+      '  logs         — Exibe últimos logs',
+      '  [qualquer]   — Enviado ao backend Python para execução',
+    ];
+    cmds.forEach(l => termAppendLine(l, 'info'));
+    termAppendLine('', 'blank');
+    return;
+  }
+  if (cmd === 'status') {
+    apiGet('/api/status').then(s => {
+      if (s) {
+        termAppendLine('Provedor: ' + (s.current_provider || 'N/A'), 'info');
+        termAppendLine('Tokens:   ' + (s.tokens_session || 0), 'info');
+        termAppendLine('Voz:      ' + (s.voice_active ? 'ATIVA' : 'INATIVA'), 'info');
+      } else {
+        termAppendLine('Backend offline ou sem resposta.', 'err');
+      }
+      termAppendLine('', 'blank');
+    });
+    return;
+  }
+  if (cmd === 'logs') {
+    const recent = logEntries.slice(0, 20);
+    if (recent.length === 0) { termAppendLine('Nenhum log disponível.', 'warn'); return; }
+    recent.reverse().forEach(l => termAppendLine(`[${l.time}] [${l.level}] ${l.msg}`, 'out'));
+    termAppendLine('', 'blank');
+    return;
+  }
+
+  // Envia ao backend via WebSocket
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    termSetRunning(true);
+    ws.send(JSON.stringify({ type: 'exec', cmd }));
+  } else {
+    // Fallback: tenta via API REST
+    termSetRunning(true);
+    apiPost('/api/exec', { cmd }).then(res => {
+      termSetRunning(false);
+      if (res && res.output) {
+        res.output.split('\n').forEach(l => termAppendLine(l, 'out'));
+      } else if (res && res.error) {
+        res.error.split('\n').forEach(l => termAppendLine(l, 'err'));
+      } else {
+        termAppendLine('Backend não suporta execução de comandos ainda.', 'warn');
+        termAppendLine('Conecte ao servidor Python para habilitar este recurso.', 'warn');
+      }
+      termAppendLine('', 'blank');
+    });
+  }
+}
+
+function termKill() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'kill_exec' }));
+    termAppendLine('[KILL] Sinal enviado ao processo.', 'warn');
+  }
+  termSetRunning(false);
+}
+
+function termKeyDown(e) {
+  const inp = document.getElementById('termInput');
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    termSend();
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (termHistIdx < termHistory.length - 1) {
+      termHistIdx++;
+      inp.value = termHistory[termHistIdx];
+      // Move cursor para o final
+      setTimeout(() => inp.setSelectionRange(inp.value.length, inp.value.length), 0);
+    }
+  } else if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (termHistIdx > 0) {
+      termHistIdx--;
+      inp.value = termHistory[termHistIdx];
+    } else {
+      termHistIdx = -1;
+      inp.value = '';
+    }
+  } else if (e.key === 'Tab') {
+    e.preventDefault();
+    // Autocompletar simples com comandos locais
+    const localCmds = ['clear', 'cls', 'help', 'status', 'logs'];
+    const partial = inp.value;
+    const match = localCmds.find(c => c.startsWith(partial) && c !== partial);
+    if (match) inp.value = match;
+  } else if (e.key === 'c' && e.ctrlKey) {
+    termKill();
+    inp.value = '';
+  }
+}
+
+// Quando o painel terminal é aberto, foca no input
+function onTerminalOpen() {
+  setTimeout(() => {
+    const inp = document.getElementById('termInput');
+    if (inp) inp.focus();
+  }, 50);
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────

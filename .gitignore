@@ -8,10 +8,15 @@ build/
 .eggs/
 *.spec
 
-# ── Environment ──────────────────────────────────────────
+# ── Environment / Virtualenvs ────────────────────────────
 .env
 .env.local
 *.env.local
+shaz_env/
+venv/
+venv_py310/
+venv_xtts/
+.venv/
 
 # ── IDE / Editor ─────────────────────────────────────────
 .vscode/

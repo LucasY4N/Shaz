@@ -11,7 +11,7 @@ echo.
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Python nao encontrado!
-    echo Baixe Python 3.11+ em: https://python.org/downloads
+    echo Baixe Python 3.10+ em: https://python.org/downloads
     pause
     exit /b 1
 )

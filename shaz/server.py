@@ -98,8 +98,8 @@ def get_brain() -> ShazBrain:
                 )
                 
                 # Callbacks para broadcast
-                brain.set_on_status_change(lambda s: _broadcast({"type": "status", "status": s}))
-                brain.set_on_response(lambda r: _broadcast({"type": "response", "response": r}))
+                brain.set_on_status_change(lambda s: _broadcast_sync({"type": "status", "status": s}))
+                brain.set_on_response(lambda r: _broadcast_sync({"type": "response", "response": r}))
                 
                 _brain = brain
                 logger.info("[Server] ShazBrain pronto para o servidor HTTP!")

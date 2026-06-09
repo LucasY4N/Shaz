@@ -1,0 +1,55 @@
+{
+  "name": "shaz-os",
+  "version": "3.0.0",
+  "description": "Shaz OS — NEXUS v3.0 — Assistente de IA pessoal",
+  "main": "main.js",
+  "author": "Shaz Project",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3",
+    "electron-packager": "^17.1.2"
+  },
+  "build": {
+    "appId": "com.shaz.nexus",
+    "productName": "Shaz OS",
+    "copyright": "Copyright 2025 Shaz Project",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "../shaz-terminal.html",
+        "to": "shaz-terminal.html"
+      }
+    ],
+    "win": {
+      "sign": null,
+      "signingHashAlgorithms": null,
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "portable": {
+      "artifactName": "ShazOS-Portable-${version}.exe"
+    }
+  },
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}

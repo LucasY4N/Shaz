@@ -2,7 +2,7 @@
 shaz/voice/tts.py  — VERSÃO CORRIGIDA
 Fixes aplicados:
   1. Edge TTS não usa mais asyncio.run() dentro de loop existente
-  2. Edge TTS definido como engine primário (mais confiável sem instalação)
+  2. Edge TTS definido como engine primário (mais confiável sem build tools)
   3. XTTS e Piper continuam como opções mas não travam o boot se ausentes
   4. Suporte a VoiceMeeter: AudioPlayer aceita nome/índice de dispositivo de saída
 """
@@ -223,7 +223,7 @@ class TTSManager:
 
     def __init__(self, config: Optional[Config] = None) -> None:
         self._config = config or Config()
-        # FIX: Edge TTS como primário — mais confiável sem instalação extra
+        # Edge TTS como primário — mais confiável, funciona sem build tools
         self._fallback_chain = ["edge", "piper", "xtts"]
         self._current_engine = "edge"
 

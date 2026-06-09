@@ -1,6 +1,6 @@
 # ⚡ Shaz AI
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
@@ -136,7 +136,7 @@ pre-commit install          # Hooks automáticos
 
 | Categoria | Tecnologia |
 |-----------|------------|
-| **Linguagem** | Python 3.11+ |
+| **Linguagem** | Python 3.10+ |
 | **LLM** | Google Gemini (`google-genai`), Groq |
 | **Banco** | MongoDB (`motor` async) |
 | **CLI** | Typer + Rich |

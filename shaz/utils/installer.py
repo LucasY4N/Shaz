@@ -50,8 +50,8 @@ class DependencyChecker:
     def check_python_version(cls) -> Tuple[bool, str]:
         """Verifica se a versão do Python é compatível."""
         version = sys.version_info
-        if version.major < 3 or (version.major == 3 and version.minor < 11):
-            return False, f"Python 3.11+ required (found {version.major}.{version.minor})"
+        if version.major < 3 or (version.major == 3 and version.minor < 10):
+            return False, f"Python 3.10+ required (found {version.major}.{version.minor})"
         return True, f"Python {version.major}.{version.minor}.{version.micro}"
 
     @classmethod
