@@ -11,7 +11,7 @@ echo.
 python --version >nul 2>&1
 if %errorlevel% neq 0 (
     echo [ERROR] Python nao encontrado!
-    echo Baixe Python 3.10+ em: https://python.org/downloads
+    echo Baixe Python 3.11+ em: https://python.org/downloads
     pause
     exit /b 1
 )
@@ -28,20 +28,27 @@ if %errorlevel% neq 0 (
 )
 
 :: Atualizar pip
-echo [1/4] Atualizando pip...
+echo [1/5] Atualizando pip...
 python -m pip install --upgrade pip -q
 echo.
 
 :: Instalar dependencias
-echo [2/4] Instalando dependencias principais...
+echo [2/5] Instalando dependencias principais...
 pip install -e ".[full]" --quiet
+if %errorlevel% neq 0 (
+    echo [WARNING] Algumas dependencias podem nao ter sido instaladas.
+)
+
+echo.
+echo [3/5] Instalando dependencias adicionais...
+pip install requests pydantic -q
 if %errorlevel% neq 0 (
     echo [WARNING] Algumas dependencias podem nao ter sido instaladas.
 )
 echo.
 
 :: Instalar pyaudio (Windows)
-echo [3/4] Instalando pyaudio...
+echo [4/5] Instalando pyaudio...
 pip install pipwin -q
 pipwin install pyaudio -q 2>nul
 if %errorlevel% neq 0 (
@@ -52,7 +59,7 @@ if %errorlevel% neq 0 (
 echo.
 
 :: Verificar instalacao
-echo [4/4] Verificando instalacao...
+echo [5/5] Verificando instalacao...
 python -c "import sys; print(f'Python {sys.version}')" 2>nul
 python -c "import rich; print('rich: OK')" 2>nul
 python -c "import dotenv; print('dotenv: OK')" 2>nul
