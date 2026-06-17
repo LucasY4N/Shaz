@@ -305,6 +305,9 @@ async def set_voice(req: VoiceRequest) -> dict:
         tts = brain._tts if hasattr(brain, '_tts') else None
         if tts and hasattr(tts, 'set_voice'):
             tts.set_voice(req.voice)
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if vm and hasattr(vm, 'set_tts_voice'):
+            vm.set_tts_voice(req.voice)
     except Exception:
         pass
     _broadcast_sync({"type": "voice_set", "voice": req.voice})
@@ -319,6 +322,9 @@ async def set_engine(req: EngineRequest) -> dict:
         tts = brain._tts if hasattr(brain, '_tts') else None
         if tts and hasattr(tts, 'set_engine'):
             tts.set_engine(req.engine)
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if vm and hasattr(vm, 'set_tts_engine'):
+            vm.set_tts_engine(req.engine)
     except Exception:
         pass
     _broadcast_sync({"type": "engine_set", "engine": req.engine})
@@ -326,14 +332,116 @@ async def set_engine(req: EngineRequest) -> dict:
 
 
 @app.post("/api/voice/test")
-async def test_voice() -> dict:
-    """Testa a voz atual com uma frase."""
+async def test_voice(req: ChatRequest) -> dict:
+    """
+    Testa a síntese de voz com um texto de exemplo.
+    Uso: POST {"message": "Texto opcional para testar"}
+    Se não fornecer texto, usa um padrão.
+    """
     brain = get_brain()
     try:
-        # Tenta falar uma frase de teste
+        text = req.message.strip() if req.message.strip() else "Olá! Eu sou a Shaz, sua inteligência artificial. Teste de voz funcionando perfeitamente!"
+        
         if hasattr(brain, 'speak'):
-            await brain.speak("Olá! Eu sou a Shaz. Teste de voz completo.")
-        return {"status": "ok", "message": "Voz testada"}
+            await brain.speak(text, wait=True)
+        
+        _broadcast_sync({"type": "voice_test", "text": text})
+        return {"status": "ok", "message": "Teste de voz reproduzido"}
+    except Exception as e:
+        logger.error(f"[Voice] Erro no teste de voz: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/voice/speak")
+async def speak_text(req: ChatRequest) -> dict:
+    """
+    Fala um texto sob demanda (APENAS quando o usuário pede).
+    
+    Uso: POST {"message": "Texto que a Shaz deve falar"}
+    
+    Diferença do /api/chat: este endpoint APENAS fala,
+    sem processar como mensagem de conversa.
+    """
+    brain = get_brain()
+    try:
+        text = req.message.strip()
+        if not text:
+            return {"status": "error", "message": "Nenhum texto fornecido"}
+        
+        if hasattr(brain, 'speak'):
+            await brain.speak(text, wait=True)
+        return {"status": "ok", "message": "Áudio reproduzido"}
+    except Exception as e:
+        logger.error(f"[Voice] Erro ao falar: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/voice/test_simple")
+async def test_voice_simple():
+    """
+    Teste simples de voz - verifica se o TTS está funcional.
+    GET sem parâmetros. Fala uma mensagem padrão.
+    """
+    brain = get_brain()
+    try:
+        text = "Olá! Teste de voz da Shaz está funcionando."
+        
+        # Verifica se o VoiceManager está disponível
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if vm:
+            audio = await vm.speak_text(text)
+            if audio:
+                if hasattr(brain, '_audio') and brain._audio:
+                    await asyncio.to_thread(brain._audio.player.play_bytes, audio)
+                return {"status": "ok", "message": "Voz testada com VoiceManager"}
+        
+        # Fallback direto para TTS
+        if hasattr(brain, '_tts') and brain._tts:
+            audio = await brain._tts.synthesize(text)
+            if audio:
+                if hasattr(brain, '_audio') and brain._audio:
+                    await asyncio.to_thread(brain._audio.player.play_bytes, audio)
+                return {"status": "ok", "message": "Voz testada com TTS direto"}
+        
+        return {"status": "error", "message": "Nenhum motor de TTS disponível"}
+    except Exception as e:
+        logger.error(f"[Voice] Erro no teste simples: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/voice/auto-speak")
+async def set_auto_speak(req: Optional[dict] = None) -> dict:
+    """
+    Ativa/desativa fala automática.
+    Quando desativado (padrão), a Shaz só fala quando você pedir explicitamente.
+    Quando ativado, ela fala toda resposta automaticamente.
+    
+    Body opcional: {"enabled": true} ou {"enabled": false}
+    Se omitido, alterna o estado atual.
+    """
+    brain = get_brain()
+    try:
+        if hasattr(brain, 'is_auto_speak_enabled') and hasattr(brain, 'enable_auto_speak'):
+            # Se veio parâmetro, usa ele; senão, alterna
+            if hasattr(req, 'dict') and callable(getattr(req, 'dict')):
+                data = req.dict() if hasattr(req, 'dict') else {}
+            else:
+                data = {}
+            
+            enabled = data.get('enabled', not brain.is_auto_speak_enabled)
+            brain.enable_auto_speak(enabled)
+            
+            _broadcast_sync({
+                "type": "auto_speak",
+                "enabled": enabled,
+            })
+            
+            return {
+                "status": "ok",
+                "auto_speak": enabled,
+                "message": f"Fala automática {'ativada' if enabled else 'desativada'}"
+            }
+        return {"status": "error", "message": "Recurso não disponível"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -400,6 +508,232 @@ async def voice_stop_speaking():
         _broadcast_sync({"type": "speaking_stopped"})
         logger.info("[Voice] Fala interrompida pelo usuario")
         return {"status": "ok", "message": "Fala interrompida"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/voice/clone/profiles")
+async def get_clone_profiles():
+    """Lista todos os perfis de voz clonada disponíveis."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if vm and hasattr(vm, 'list_cloned_profiles'):
+            profiles = vm.list_cloned_profiles()
+            result = []
+            for p in profiles:
+                result.append({
+                    "id": p.id,
+                    "name": p.name,
+                    "language": p.language,
+                    "duration_seconds": p.duration_seconds,
+                    "created_at": p.created_at,
+                    "description": p.description,
+                })
+            return result
+        return {"error": "Voice cloner not available", "profiles": []}
+    except Exception as e:
+        logger.error(f"[VoiceClone] Erro ao listar perfis: {e}")
+        return {"error": str(e), "profiles": []}
+
+
+class CloneCreateRequest(BaseModel):
+    audio_path: str
+    name: str
+    language: str = "pt"
+    description: str = ""
+
+
+@app.post("/api/voice/clone/create")
+async def create_clone_profile(req: CloneCreateRequest):
+    """Cria um novo perfil de voz clonada a partir de um áudio de referência."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if not vm or not hasattr(vm, 'create_cloned_profile'):
+            return {"status": "error", "message": "Voice cloner not available"}
+        
+        profile = await vm.create_cloned_profile(
+            audio_path=req.audio_path,
+            name=req.name,
+            language=req.language,
+            description=req.description,
+        )
+        
+        if profile:
+            _broadcast_sync({
+                "type": "voice_clone_created",
+                "profile": {
+                    "id": profile.id,
+                    "name": profile.name,
+                    "language": profile.language,
+                }
+            })
+            return {
+                "status": "ok",
+                "profile": {
+                    "id": profile.id,
+                    "name": profile.name,
+                    "language": profile.language,
+                    "duration_seconds": profile.duration_seconds,
+                }
+            }
+        return {"status": "error", "message": "Falha ao criar perfil"}
+    except Exception as e:
+        logger.error(f"[VoiceClone] Erro ao criar perfil: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+class CloneActivateRequest(BaseModel):
+    profile_id: str
+
+
+@app.post("/api/voice/clone/activate")
+async def activate_clone_profile(req: CloneActivateRequest):
+    """Ativa um perfil de voz clonada para uso."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if not vm or not hasattr(vm, 'set_active_cloned_profile'):
+            return {"status": "error", "message": "Voice cloner not available"}
+        
+        ok = vm.set_active_cloned_profile(req.profile_id)
+        
+        _broadcast_sync({
+            "type": "voice_clone_activated",
+            "profile_id": req.profile_id,
+            "active": ok,
+        })
+        
+        if ok:
+            # Pega nome do perfil para resposta
+            profile = vm.get_cloned_profile(req.profile_id)
+            name = profile.name if profile else "desconhecido"
+            return {
+                "status": "ok",
+                "message": f"Voz clonada '{name}' ativada",
+                "profile_id": req.profile_id,
+            }
+        return {"status": "error", "message": "Perfil não encontrado"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/api/voice/clone/deactivate")
+async def deactivate_clone_profile():
+    """Desativa a voz clonada e volta para Edge TTS."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if vm and hasattr(vm, 'set_active_cloned_profile'):
+            vm.set_active_cloned_profile(None)
+            _broadcast_sync({"type": "voice_clone_deactivated"})
+            return {"status": "ok", "message": "Voz clonada desativada, usando Edge TTS"}
+        return {"status": "error", "message": "Voice cloner not available"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/voice/clone/status")
+async def clone_status():
+    """Retorna o status atual da clonagem de voz."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if not vm:
+            return {"available": False, "active": False}
+        
+        return {
+            "available": hasattr(vm, 'is_cloned_voice_active'),
+            "active": vm.is_cloned_voice_active if hasattr(vm, 'is_cloned_voice_active') else False,
+            "voice_type": vm.current_voice_type if hasattr(vm, 'current_voice_type') else "edge",
+            "cloner_available": getattr(vm, '_cloner', None) is not None,
+        }
+    except Exception as e:
+        return {"available": False, "active": False, "error": str(e)}
+
+
+class CloneSpeakRequest(BaseModel):
+    text: str
+    profile_id: str
+    speed: float = 1.0
+    temperature: float = 0.75
+
+
+@app.post("/api/voice/clone/synthesize")
+async def clone_synthesize(req: CloneSpeakRequest):
+    """
+    Sintetiza e reproduz texto usando uma voz clonada específica.
+    Uso: POST {"text": "Olá mundo!", "profile_id": "abc123", "speed": 1.0, "temperature": 0.75}
+    
+    Diferença do /api/voice/speak: usa voz clonada e não precisa ativar o perfil antes.
+    """
+    brain = get_brain()
+    try:
+        text = req.text.strip()
+        if not text:
+            return {"status": "error", "message": "Nenhum texto fornecido"}
+        
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if not vm:
+            return {"status": "error", "message": "Voice manager not available"}
+        
+        # Salva o perfil ativo atual para restaurar depois
+        previous_profile = getattr(vm, '_current_cloned_profile', None)
+        
+        try:
+            # Ativa o perfil solicitado temporariamente
+            vm.set_active_cloned_profile(req.profile_id)
+            
+            # Sintetiza e reproduz
+            audio = await vm.synthesize_cloned(
+                text=text,
+                profile_id=req.profile_id,
+                speed=req.speed,
+                temperature=req.temperature,
+            )
+            
+            if audio:
+                # Reproduz o áudio
+                if hasattr(brain, '_audio') and brain._audio:
+                    await asyncio.to_thread(brain._audio.player.play_bytes, audio)
+                return {
+                    "status": "ok",
+                    "message": f"Áudio com voz clonada reproduzido ({len(audio)} bytes)",
+                    "bytes": len(audio),
+                }
+            
+            return {"status": "error", "message": "Falha ao sintetizar com voz clonada"}
+        finally:
+            # Restaura o perfil anterior (mesmo que seja None = Edge TTS)
+            vm.set_active_cloned_profile(previous_profile)
+            
+    except Exception as e:
+        logger.error(f"[VoiceClone] Erro ao sintetizar: {e}")
+        return {"status": "error", "message": str(e)}
+
+
+class DeleteProfileRequest(BaseModel):
+    profile_id: str
+
+
+@app.post("/api/voice/clone/delete")
+async def delete_clone_profile(req: DeleteProfileRequest):
+    """Remove um perfil de voz clonada."""
+    brain = get_brain()
+    try:
+        vm = brain.voice_manager if hasattr(brain, 'voice_manager') else None
+        if not vm or not hasattr(vm, 'delete_cloned_profile'):
+            return {"status": "error", "message": "Voice cloner not available"}
+        
+        ok = vm.delete_cloned_profile(req.profile_id)
+        if ok:
+            _broadcast_sync({
+                "type": "voice_clone_deleted",
+                "profile_id": req.profile_id,
+            })
+            return {"status": "ok", "message": "Perfil removido"}
+        return {"status": "error", "message": "Perfil não encontrado"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
@@ -536,13 +870,13 @@ if __name__ == "__main__":
     port = int(os.environ.get("SHAZ_PORT", 8765))
     host = os.environ.get("SHAZ_HOST", "0.0.0.0")
     
-    print(f"╔══════════════════════════════════════════════════╗")
-    print(f"║     Shaz AI — NEXUS v3.0 — HTTP Server          ║")
-    print(f"╠══════════════════════════════════════════════════╣")
-    print(f"║  API:   http://localhost:{port}/api              ║")
-    print(f"║  App:   http://localhost:{port}/app              ║")
-    print(f"║  WS:    ws://localhost:{port}/ws                 ║")
-    print(f"║  Docs:  http://localhost:{port}/docs             ║")
-    print(f"╚══════════════════════════════════════════════════╝")
+    print("=" * 50)
+    print("     Shaz AI — NEXUS v3.0 — HTTP Server")
+    print("=" * 50)
+    print(f"  API:   http://localhost:{port}/api")
+    print(f"  App:   http://localhost:{port}/app")
+    print(f"  WS:    ws://localhost:{port}/ws")
+    print(f"  Docs:  http://localhost:{port}/docs")
+    print("=" * 50)
     
     uvicorn.run(app, host=host, port=port, log_level="info")

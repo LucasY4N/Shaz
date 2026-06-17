@@ -48,9 +48,10 @@
     "stt_phrase_time_limit": 15.0,
     "stt_adjust_for_ambient_noise": true,
     "tts_engine": "edge",
-    "tts_voice": "pt-BR-FranciscaNeural",
+    "tts_voice": "pt-BR-ThalitaNeural",
     "tts_speed": 1.0,
     "tts_volume": 1.0,
+    "tts_auto_speak": false,
     "vad_enabled": true,
     "vad_threshold": 0.5
   },

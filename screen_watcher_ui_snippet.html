@@ -1,0 +1,272 @@
+<!--
+  ══════════════════════════════════════════════════════════════
+  PAINEL DA SHAZ — OLHO NA TELA
+  
+  COMO ADICIONAR NO shaz-terminal.html:
+  
+  1. Adicione o <div id="panel-olho"> junto com os outros painéis
+     (dentro de <div class="content">)
+  
+  2. Adicione o item de navegação no <nav class="sidebar-nav">
+  
+  3. Adicione o CSS e o JS (marcados abaixo)
+  
+  4. No handleWSMessage() existente, adicione o case 'screen_comment'
+  ══════════════════════════════════════════════════════════════
+-->
+
+
+<!-- ════════════════════════════════════════════════════════
+     PASSO 1 — Cole este <div> dentro de <div class="content">
+     junto com os outros panels (panel-chat, panel-monitor, etc.)
+     ════════════════════════════════════════════════════════ -->
+
+<div class="panel" id="panel-olho">
+  <div class="panel-inner">
+    <div class="p-title">👁 OLHO NA TELA — Shaz te observa</div>
+
+    <!-- Status atual -->
+    <div class="p-card" style="border-color:rgba(255,79,163,0.3)">
+      <div class="p-card-title">Status</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div id="eye-dot" style="width:14px;height:14px;border-radius:50%;background:var(--muted);flex-shrink:0"></div>
+        <span id="eye-status-text" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted)">
+          INATIVO
+        </span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="action-btn abtn-pink" style="flex:1;min-width:120px" onclick="startEye()">
+          👁 LIGAR
+        </button>
+        <button class="action-btn abtn-outline" style="flex:1;min-width:120px" onclick="stopEye()">
+          ⏹ DESLIGAR
+        </button>
+        <button class="action-btn abtn-outline" style="flex:1;min-width:120px" onclick="observeNow()">
+          📸 VER AGORA
+        </button>
+      </div>
+    </div>
+
+    <!-- Configurações -->
+    <div class="p-card">
+      <div class="p-card-title">Configurações</div>
+
+      <label style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px">
+        INTERVALO ENTRE OBSERVAÇÕES
+      </label>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <input type="range" id="eye-interval-slider" min="10" max="300" value="30" step="5"
+          style="flex:1;accent-color:var(--pink)"
+          oninput="document.getElementById('eye-interval-val').textContent=this.value+'s'">
+        <span id="eye-interval-val" style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--pink);min-width:40px">
+          30s
+        </span>
+      </div>
+
+      <label style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px">
+        MONITOR
+      </label>
+      <select id="eye-monitor" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;margin-bottom:14px">
+        <option value="0">Todos os monitores</option>
+        <option value="1">Monitor 1 (principal)</option>
+        <option value="2">Monitor 2</option>
+      </select>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0">
+        <span style="font-size:13px;color:var(--text)">Falar em voz alta</span>
+        <label style="position:relative;display:inline-block;width:44px;height:24px">
+          <input type="checkbox" id="eye-speak" checked style="opacity:0;width:0;height:0">
+          <span onclick="document.getElementById('eye-speak').click()" style="position:absolute;cursor:pointer;inset:0;background:rgba(255,79,163,0.3);border-radius:12px;transition:.3s"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Últimos comentários -->
+    <div class="p-card">
+      <div class="p-card-title">
+        Últimas observações
+        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-left:6px" id="eye-obs-count">(0)</span>
+      </div>
+      <div id="eye-comments-list" style="display:flex;flex-direction:column;gap:8px">
+        <div style="color:var(--muted);font-size:12px;font-family:'Share Tech Mono',monospace">
+          Nenhuma observação ainda. Clique em LIGAR para começar.
+        </div>
+      </div>
+    </div>
+
+    <!-- Aviso de dependências -->
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:14px;margin-top:4px">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--yellow);letter-spacing:1px;margin-bottom:6px">⚠ DEPENDÊNCIAS NECESSÁRIAS</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7">
+        Para usar este recurso, instale:<br>
+        <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;color:var(--text)">pip install mss pillow</code><br>
+        E configure a chave <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;color:var(--text)">GEMINI_API_KEY</code> no .env
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PASSO 2 — Cole este item no <nav class="sidebar-nav">
+     depois do item "conexoes" por exemplo
+     ════════════════════════════════════════════════════════ -->
+
+<div class="nav-item" data-panel="olho" onclick="goPanel('olho',this)">
+  <div class="nav-left">
+    <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="1.5"/>
+      <circle cx="12" cy="12" r="3" stroke-width="1.5"/>
+    </svg>
+    Olho na Tela
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PASSO 3 — Cole este bloco <style> dentro do <style> existente
+     (pode ser no final, antes do </style>)
+     ════════════════════════════════════════════════════════ -->
+
+<style>
+/* Eye comment entries */
+.eye-comment-entry {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--pink);
+  border-radius: 8px;
+  padding: 10px 12px;
+  animation: fsi .3s ease-out;
+}
+.eye-comment-time {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+.eye-comment-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+#eye-dot.active {
+  background: var(--pink) !important;
+  box-shadow: 0 0 10px var(--pink);
+  animation: blink 1.5s ease-in-out infinite;
+}
+</style>
+
+
+<!-- ════════════════════════════════════════════════════════
+     PASSO 4 — Cole este bloco <script> no final do <script> existente
+     (antes do </script> final)
+     ════════════════════════════════════════════════════════ -->
+
+<script>
+// ── Screen Watcher ────────────────────────────────────────────────────────
+let eyeObsCount = 0;
+
+async function startEye() {
+  const interval = parseFloat(document.getElementById('eye-interval-slider').value);
+  const monitor  = parseInt(document.getElementById('eye-monitor').value);
+  const speak    = document.getElementById('eye-speak').checked;
+
+  addLog('INFO', '👁 Ativando monitoramento de tela...', 'cyan');
+
+  const result = await apiPost('/api/screen/start', {
+    interval_seconds: interval,
+    monitor_index: monitor,
+    speak: speak,
+    save_screenshots: false,
+  });
+
+  if (result && result.status === 'ok') {
+    setEyeActive(true);
+    addLog('INFO', '👁 ' + result.message, 'green');
+  } else {
+    addLog('ERROR', 'Falha ao ativar: ' + (result?.message || result?.detail || 'erro'), 'red');
+  }
+}
+
+async function stopEye() {
+  const result = await apiPost('/api/screen/stop', {});
+  if (result && result.status === 'ok') {
+    setEyeActive(false);
+    addLog('INFO', '⏹ Monitoramento de tela desativado', 'yellow');
+  }
+}
+
+async function observeNow() {
+  addLog('INFO', '📸 Tirando print agora...', 'cyan');
+  const result = await apiPost('/api/screen/observe', {});
+
+  if (result && result.status === 'ok') {
+    addEyeComment(result.message || result.data?.comment);
+    addLog('INFO', '👁 Observação: ' + (result.message || '').slice(0, 60), 'green');
+  } else {
+    addLog('ERROR', 'Falha na observação: ' + (result?.detail || 'erro'), 'red');
+  }
+}
+
+function setEyeActive(active) {
+  const dot  = document.getElementById('eye-dot');
+  const text = document.getElementById('eye-status-text');
+  if (active) {
+    dot.classList.add('active');
+    text.style.color = 'var(--pink)';
+    text.textContent = 'ATIVO — observando a cada ' + document.getElementById('eye-interval-val').textContent;
+  } else {
+    dot.classList.remove('active');
+    dot.style.background = 'var(--muted)';
+    text.style.color = 'var(--muted)';
+    text.textContent = 'INATIVO';
+  }
+}
+
+function addEyeComment(text) {
+  if (!text) return;
+  eyeObsCount++;
+  document.getElementById('eye-obs-count').textContent = '(' + eyeObsCount + ')';
+
+  const list = document.getElementById('eye-comments-list');
+
+  // Remove placeholder se for o primeiro
+  if (eyeObsCount === 1) list.innerHTML = '';
+
+  const now = new Date().toLocaleTimeString('pt-BR');
+  const entry = document.createElement('div');
+  entry.className = 'eye-comment-entry';
+  entry.innerHTML = `
+    <div class="eye-comment-time">👁 ${now}</div>
+    <div class="eye-comment-text">${text}</div>
+  `;
+
+  list.insertBefore(entry, list.firstChild);
+
+  // Mantém só os últimos 10
+  while (list.children.length > 10) list.removeChild(list.lastChild);
+
+  // Também adiciona no chat
+  if (typeof addMessage === 'function') {
+    addMessage('assistant', '👁 ' + text);
+  } else if (typeof appendAI === 'function') {
+    appendAI('👁 ' + text);
+  }
+}
+
+// ── Integração com WebSocket: adicione este case no handleWSMessage() ──────
+//
+// case 'screen_comment':
+//   addEyeComment(data.comment);
+//   break;
+//
+// Procure a função handleWSMessage no script existente e adicione esse case.
+
+// ── Polua o goPanel para incluir o novo título ─────────────────────────────
+// No objeto `titles` da função goPanel existente, adicione:
+// olho: '👁 OLHO NA TELA — Shaz te observa',
+//
+// Ou, se preferir não editar o goPanel, o painel funciona igualmente.
+</script>

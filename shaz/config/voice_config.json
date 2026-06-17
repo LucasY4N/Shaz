@@ -1,7 +1,14 @@
 {
-  "voice_model": "xtts",
+  "voice_model": "edge",
   "speaker": "shaz",
   "language": "pt",
+  "primary_engine": "edge",
+  "edge": {
+    "voice": "pt-BR-ThalitaNeural",
+    "rate": "+0%",
+    "volume": "+0%",
+    "pitch": "+0Hz"
+  },
   "xtts": {
     "model_path": "models/xtts",
     "speaker_wav": "assets/voices/shaz_reference.wav",
@@ -16,11 +23,10 @@
     "noise_w": 0.8,
     "length_scale": 1.0
   },
-  "edge": {
-    "voice": "pt-BR-FranciscaNeural",
-    "rate": "+0%",
-    "volume": "+0%",
-    "pitch": "+0Hz"
-  },
-  "fallback_chain": ["xtts", "piper", "edge"]
+  "fallback_chain": ["edge", "piper", "xtts"],
+  "auto_speak": false,
+  "voice_commands": {
+    "speak_prefixes": ["fale", "fala", "diga", "diz", "pronuncie"],
+    "silence_prefixes": ["não fale", "nao fale", "sem voz", "só texto", "apenas texto"]
+  }
 }

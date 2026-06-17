@@ -1,0 +1,29 @@
+# ─── ADICIONE ESTAS LINHAS NO SEU .env EXISTENTE ──────────────────────────
+#
+# Bot Discord da Shaz AI
+# Obtenha o token em: https://discord.com/developers/applications
+# → Seu app → Bot → Reset Token
+
+# Token do bot (OBRIGATÓRIO)
+DISCORD_TOKEN=""
+
+# ID do servidor principal onde o bot vai rodar
+# Clique com botão direito no servidor → "Copiar ID do Servidor"
+# (ative Modo Desenvolvedor em Configurações → Avançado → Modo Desenvolvedor)
+DISCORD_GUILD_ID=""
+
+# ID do canal onde a Shaz responde TODAS as mensagens (opcional)
+# Deixe vazio para responder só quando mencionada
+DISCORD_CHANNEL_ID=""
+
+# Prefixo para comandos legados (padrão: !)
+DISCORD_PREFIX="!"
+
+# Status que aparece no perfil da Shaz
+DISCORD_STATUS="Observando a tela do usuário 👁"
+
+# URL do backend Shaz (onde o run_server_new.py está rodando)
+SHAZ_API_URL="http://localhost:8765"
+
+# Voz: tempo de inatividade antes de sair do canal (segundos)
+VOICE_AUTO_LEAVE_SECONDS=300

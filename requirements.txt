@@ -1,36 +1,51 @@
-# Shaz AI - Dependências
-# Python 3.11+ requerido
-# Instalar com: pip install -r requirements.txt
+# Shaz AI - Requirements
+# Python 3.11+ required
+# pip install -r requirements.txt
 
-# Core
+# Core Framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.0
+pydantic-settings>=2.0
+python-dotenv>=1.0
+httpx>=0.27
+
+# LLM Providers
+openai>=1.6
+groq>=0.9
+google-genai>=2.8
+
+# Desktop UI
 PySide6>=6.6
+
+# Voz
 faster-whisper>=1.0
 edge-tts>=6.1
 sounddevice>=0.4
 soundfile>=0.12
 pygame>=2.5
+
+# Utilitarios
 rich>=13.7
-python-dotenv>=1.0
-httpx>=0.27
-openai>=1.6
-groq>=0.9
-google-genai>=2.8
+requests>=2.31
 psutil>=5.9
 numpy>=1.24
-requests>=2.31
-pydantic>=2.0
 
-# Voz (opcional)
-# TTS
-# piper-tts
-# pyaudio
-# speechrecognition>=3.10
-# pyttsx3>=2.90
+# Dev / Testes
+pytest>=8.1
+pytest-asyncio>=0.23
+httpx>=0.27    # TestClient
 
-# Desenvolvimento (opcional)
+# Opcional: qualidade de codigo
 # ruff>=0.4
 # black>=24.4
 # mypy>=1.9
-# pytest>=8.1
-# pytest-asyncio>=0.23
 # pre-commit>=3.7
+
+# Opcional: voz avancada
+# TTS                  # XTTS-v2 (clonagem de voz, ~2GB)
+# piper-tts            # TTS local leve
+# pyaudio              # Windows: pipwin install pyaudio
+# speechrecognition>=3.10
+# pyttsx3>=2.90
+# pydub                # conversao de audio (requer FFmpeg)

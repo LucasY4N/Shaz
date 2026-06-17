@@ -319,6 +319,13 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         Conexões
       </div>
     </div>
+    <div class="nav-item" data-panel="discord" onclick="goPanel('discord',this)">
+      <div class="nav-left">
+        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Discord Bot
+      </div>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--yellow);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:2px 5px;border-radius:4px;letter-spacing:1px;" id="discordNavBadge">OFF</span>
+    </div>
     <div class="nav-item" data-panel="vtube" onclick="goPanel('vtube',this)">
       <div class="nav-left">
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" stroke-width="1.5"/><path d="M8 21h8M12 17v4" stroke-width="1.5"/></svg>
@@ -579,6 +586,42 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
           <div class="p-card-title">🎙 Configuração de Áudio</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áudio gerenciado pelo backend Python (fala local).</div>
           <button class="action-btn abtn-pink" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DISCORD BOT ── -->
+    <div class="panel" id="panel-discord">
+      <div class="panel-inner">
+        <div class="p-title">💠 DISCORD BOT</div>
+        <div class="p-card">
+          <div class="p-card-title">Status do Bot</div>
+          <div class="stat-grid">
+            <div class="stat-box" style="text-align:center">
+              <div style="font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">STATUS</div>
+              <div style="font-size:16px;color:var(--yellow);font-family:'Orbitron',monospace;font-weight:700;letter-spacing:3px" id="discordStatusText">DESLIGADO</div>
+            </div>
+            <div class="stat-box" style="text-align:center">
+              <div style="font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">SINAL</div>
+              <div style="font-size:20px;font-family:'Orbitron',monospace;font-weight:700" id="discordSignalText">—</div>
+            </div>
+          </div>
+          <div class="provider-row"><span class="provider-name">Token configurado</span><span class="provider-status" id="discordTokenStatus" style="background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3)">● VERIFICANDO</span></div>
+          <div class="provider-row"><span class="provider-name">Thread ativa</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)" id="discordThreadStatus">—</span></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-title">Controles</div>
+          <button class="action-btn abtn-pink" id="discordStartBtn" onclick="discordStart()">▶ INICIAR DISCORD BOT</button>
+          <button class="action-btn abtn-outline" id="discordStopBtn" onclick="discordStop()" style="border-color:rgba(239,68,68,0.4);color:var(--red)">⏹ PARAR DISCORD BOT</button>
+          <button class="action-btn abtn-outline" id="discordRefreshBtn" onclick="discordStatus()" style="margin-top:6px">🔄 Atualizar Status</button>
+        </div>
+        <div class="p-card">
+          <div class="p-card-title">Mensagem do Sistema</div>
+          <div id="discordErrorMsg" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;word-break:break-all">
+            O Discord bot não inicia automaticamente com o servidor.<br>
+            Clique em <span style="color:var(--cyan)">▶ INICIAR DISCORD BOT</span> para ativar.<br><br>
+            Configure o <span style="color:var(--pink)">DISCORD_TOKEN</span> no arquivo <span style="color:var(--yellow)">.env</span>.
+          </div>
         </div>
       </div>
     </div>
@@ -903,6 +946,7 @@ function goPanel(id,el){
     cerebro:'🧠 CÉREBRO — ShazBrain',memoria:'🛡 MEMÓRIA',
     mente:'🧩 MENTE DA SHAZ',vtube:'📺 VTUBE STUDIO (SOON)',
     terminal:'⌨ TERMINAL AGENTE',conexoes:'⚡ CONEXÕES',
+    discord:'💠 DISCORD BOT',
     minecraft:'🎮 MINECRAFT (SOON)',mcp:'☀ MCP (SOON)',
     personaliz:'👤 PERSONALIZAÇÃO',logs:'📋 LOGS DO SISTEMA'
   };
@@ -1095,11 +1139,25 @@ async function setVoice(v) {
 }
 
 async function testBackendVoice() {
-  const result = await apiPost('/api/voice/test', {});
+  const result = await apiPost('/api/voice/test', { message: "Olá! Eu sou a Shaz, sua inteligência artificial. Teste de voz funcionando perfeitamente!" });
   if (result && result.status === 'ok') {
-    addLog('INFO', '🔊 Teste de voz enviado ao backend', 'green');
+    addLog('INFO', '🔊 Teste de voz reproduzido com sucesso!', 'green');
+    showStopButton(true);
+    setTimeout(() => showStopButton(false), 5000);
   } else {
     addLog('WARN', 'Teste de voz: ' + (result?.message || 'erro'), 'yellow');
+  }
+}
+
+// Função para falar um texto específico via backend
+async function speakResponse(text) {
+  if (!text) return;
+  const result = await apiPost('/api/voice/speak', { message: text });
+  if (result && result.status === 'ok') {
+    addLog('VOICE', '🔊 Falando resposta no backend...', 'cyan');
+    showStopButton(true);
+  } else {
+    addLog('WARN', 'Falar: ' + (result?.message || 'erro'), 'yellow');
   }
 }
 
@@ -1510,6 +1568,101 @@ function onTerminalOpen() {
     const inp = document.getElementById('termInput');
     if (inp) inp.focus();
   }, 50);
+}
+
+// ── DISCORD BOT CONTROL ─────────────────────────────────────────────────────
+async function discordStatus() {
+  addLog('INFO', 'Verificando status do Discord bot...', 'cyan');
+  const result = await apiGet('/api/discord/status');
+  if (!result) {
+    document.getElementById('discordStatusText').textContent = 'ERRO';
+    document.getElementById('discordStatusText').style.color = 'var(--red)';
+    document.getElementById('discordSignalText').textContent = '✖';
+    document.getElementById('discordSignalText').style.color = 'var(--red)';
+    return;
+  }
+  
+  const running = result.running;
+  const error = result.error;
+  
+  if (running) {
+    document.getElementById('discordStatusText').textContent = 'LIGADO';
+    document.getElementById('discordStatusText').style.color = 'var(--green)';
+    document.getElementById('discordSignalText').textContent = '🟢';
+    document.getElementById('discordSignalText').style.color = 'var(--green)';
+    document.getElementById('discordStartBtn').textContent = '▶ INICIAR DISCORD BOT (já rodando)';
+    document.getElementById('discordStartBtn').style.opacity = '0.5';
+    document.getElementById('discordNavBadge').textContent = 'ON';
+    document.getElementById('discordNavBadge').style.color = 'var(--green)';
+    document.getElementById('discordNavBadge').style.borderColor = 'rgba(16,185,129,0.4)';
+    document.getElementById('discordNavBadge').style.background = 'rgba(16,185,129,0.15)';
+    document.getElementById('discordThreadStatus').textContent = 'Ativa (thread)';
+    document.getElementById('discordErrorMsg').innerHTML = 'Bot Discord está rodando na thread.<br>Use <span style="color:var(--red)">⏹ PARAR</span> para desligar.';
+    document.getElementById('discordErrorMsg').style.color = 'var(--green)';
+    addLog('DISCORD', '✅ Discord bot está rodando!', 'green');
+  } else {
+    document.getElementById('discordStatusText').textContent = 'DESLIGADO';
+    document.getElementById('discordStatusText').style.color = 'var(--yellow)';
+    document.getElementById('discordSignalText').textContent = '🔴';
+    document.getElementById('discordSignalText').style.color = 'var(--red)';
+    document.getElementById('discordStartBtn').textContent = '▶ INICIAR DISCORD BOT';
+    document.getElementById('discordStartBtn').style.opacity = '1';
+    document.getElementById('discordNavBadge').textContent = 'OFF';
+    document.getElementById('discordNavBadge').style.color = 'var(--yellow)';
+    document.getElementById('discordNavBadge').style.borderColor = 'rgba(245,158,11,0.3)';
+    document.getElementById('discordNavBadge').style.background = 'rgba(245,158,11,0.12)';
+    document.getElementById('discordThreadStatus').textContent = 'Parada';
+    
+    if (error) {
+      document.getElementById('discordErrorMsg').innerHTML = 'Erro: <span style="color:var(--red)">' + error + '</span>';
+      document.getElementById('discordErrorMsg').style.color = 'var(--red)';
+      addLog('DISCORD', '❌ Discord bot erro: ' + error, 'red');
+    } else {
+      document.getElementById('discordErrorMsg').innerHTML = 'Discord bot parado. Clique em <span style="color:var(--cyan)">▶ INICIAR</span> para ativar.';
+      document.getElementById('discordErrorMsg').style.color = 'var(--muted)';
+      addLog('DISCORD', 'Discord bot está desligado', 'yellow');
+    }
+  }
+}
+
+async function discordStart() {
+  addLog('DISCORD', '▶ Iniciando Discord bot...', 'cyan');
+  document.getElementById('discordStartBtn').disabled = true;
+  document.getElementById('discordStartBtn').textContent = '⏳ INICIANDO...';
+  
+  const result = await apiPost('/api/discord/start', {});
+  
+  if (result && result.status === 'ok') {
+    addLog('DISCORD', '✅ Discord bot iniciado com sucesso!', 'green');
+    // Pequeno delay pra thread iniciar
+    setTimeout(discordStatus, 2000);
+  } else {
+    const msg = result?.message || 'Erro desconhecido';
+    addLog('DISCORD', '❌ Falha ao iniciar: ' + msg, 'red');
+    document.getElementById('discordStartBtn').disabled = false;
+    document.getElementById('discordStartBtn').textContent = '▶ INICIAR DISCORD BOT';
+    document.getElementById('discordErrorMsg').innerHTML = 'Erro: <span style="color:var(--red)">' + msg + '</span>';
+    document.getElementById('discordErrorMsg').style.color = 'var(--red)';
+  }
+}
+
+async function discordStop() {
+  addLog('DISCORD', '⏹ Parando Discord bot...', 'yellow');
+  document.getElementById('discordStopBtn').disabled = true;
+  document.getElementById('discordStopBtn').textContent = '⏳ PARANDO...';
+  
+  const result = await apiPost('/api/discord/stop', {});
+  
+  if (result && result.status === 'ok') {
+    addLog('DISCORD', '✅ Sinal de parada enviado', 'green');
+    setTimeout(discordStatus, 2000);
+  } else {
+    const msg = result?.message || 'Erro desconhecido';
+    addLog('DISCORD', '❌ Falha ao parar: ' + msg, 'red');
+  }
+  
+  document.getElementById('discordStopBtn').disabled = false;
+  document.getElementById('discordStopBtn').textContent = '⏹ PARAR DISCORD BOT';
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────

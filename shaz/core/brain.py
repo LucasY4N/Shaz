@@ -19,6 +19,7 @@ from shaz.core.personality import Personality
 from shaz.services.api_manager import APIManager, LLMResponse
 from shaz.voice.stt import FasterWhisperSTT, STTFactory
 from shaz.voice.tts import TTSManager, TTSFactory
+from shaz.voice.voice_manager import VoiceManager, VOICE_CLONER_AVAILABLE
 from shaz.voice.audio import AudioManager, AudioPlayer
 from shaz.utils.helpers import get_system_info
 from shaz.utils.logger import logger
@@ -45,6 +46,7 @@ class ShazBrain:
         self._personality = personality or Personality(self._memory)
         self._api = api_manager or APIManager(self._config)
         self._stt = stt or STTFactory.create(self._config)
+        self._voice_manager = VoiceManager(self._config)
         self._tts = tts or TTSFactory.create(self._config)
         self._audio = audio or AudioManager(self._config)
 
@@ -55,9 +57,10 @@ class ShazBrain:
         self._on_status_change: Optional[Callable[[str], None]] = None
         self._on_response: Optional[Callable[[str], None]] = None
 
-        # Sistema de fila de fala (inicializado preguiçosamente para evitar erro de loop)
+        # Sistema de fila de fala - APENAS sob demanda, NÃO automático
         self._speak_queue: Optional[asyncio.Queue[str]] = None
         self._speak_worker_task: Optional[asyncio.Task] = None
+        self._auto_speak_enabled = False  # MUDANÇA: desabilitado por padrão
 
         # Carrega usuário
         self._user = self._memory.get_or_create_user(self._user_id)
@@ -141,10 +144,21 @@ class ShazBrain:
             # 8. Extrai memórias importantes heuristicamente
             await self._extract_memories(text, answer)
 
-            # 9. Notifica resposta
+            # 9. NÃO fala automaticamente! A voz só é ativada:
+            #    - Pelo modo de voz (process_voice) que chama speak() explicitamente
+            #    - Pelo endpoint /api/voice/speak chamado pelo frontend
+            #    - Pelo endpoint /api/voice/test para teste manual
+            #    - Pelo comando "fale isso" se auto_speak estiver ativado
+            should_speak = False
+            if self._auto_speak_enabled:
+                should_speak = self._check_speak_command(text)
+            if should_speak:
+                await self.speak(answer)
+
+            # 10. Notifica resposta
             self._notify_response(answer)
 
-            # 10. Atualiza timestamps
+            # 11. Atualiza timestamps
             self._memory.update_user_seen(self._user_id)
 
             logger.info(f"Response generated ({len(answer)} chars)")
@@ -155,6 +169,97 @@ class ShazBrain:
             logger.error(f"Brain error processing message: {e}")
             self._notify_status("online")
             return f"Desculpe, ocorreu um erro ao processar sua mensagem: {str(e)}"
+
+    def _check_speak_command(self, text: str) -> bool:
+        """
+        Verifica se o usuário pediu explicitamente para a Shaz falar.
+        
+        Retorna True APENAS se o texto contiver comandos EXPLÍCITOS de fala.
+        Palavras genéricas como "voz" ou "áudio" NÃO acionam mais fala automática
+        para evitar falsos positivos (ex: "Você tem uma voz bonita").
+        
+        Comandos reconhecidos:
+        - "fale isso", "fala isso", "diga isso", "diz isso"
+        - "fale <texto>", "fala <texto>"
+        - "fale pra mim", "fala pra mim", "me fale", "me diga"
+        - "pronuncie", "diga em voz alta"
+        - "leia em voz alta", "leia isso"
+        
+        Se auto_speak_enabled estiver True, fala toda resposta
+        a menos que o usuário peça explicitamente para não falar.
+        """
+        text_lower = text.lower().strip()
+        
+        # Comandos EXPLÍCITOS que pedem para a Shaz falar
+        # Removidos: "voz", "áudio", "audio" — causavam falsos positivos
+        speak_commands = [
+            "fale isso", "fala isso", "diga isso", "diz isso",
+            "fale em voz", "fala em voz", "diga em voz",
+            "fale pra eu ouvir", "fala pra eu ouvir",
+            "fala pra mim", "fale pra mim",
+            "me fale", "me diga",
+            "pronuncie",
+            "leia em voz", "leia isso", "leia em voz alta",
+        ]
+        
+        # Verifica comandos multi-palavra primeiro
+        for cmd in speak_commands:
+            if cmd in text_lower:
+                return True
+        
+        # Comandos de palavra única (APENAS se for a mensagem inteira ou começar com)
+        single_word_commands = ["fale!", "fala!", "fale", "fala", "diga", "diz"]
+        if text_lower in single_word_commands:
+            return True
+        
+        # Se a mensagem começa com comando de fala seguido de conteúdo
+        # Ex: "fale olá mundo" → True (extraído pelo _extract_speak_text)
+        prefixes = ["fale ", "fala ", "diga ", "diz ", "pronuncie "]
+        for prefix in prefixes:
+            if text_lower.startswith(prefix):
+                # Verifica se NÃO é um falso positivo como "fala sobre programação"
+                # Se depois do prefixo tiver "sobre", "de", "do", "da", "com" → não é comando de fala
+                rest = text_lower[len(prefix):].strip()
+                non_speak_followups = ["sobre", "de ", "do ", "da ", "com ", "que ", "qual ", "como "]
+                is_about_topic = any(rest.startswith(fw) for fw in non_speak_followups)
+                if not is_about_topic:
+                    return True
+        
+        # AUTO-SPEAK: se ativado, fala por padrão (a menos que peça pra não falar)
+        if self._auto_speak_enabled:
+            no_speak = [
+                "não fale", "nao fale", "não fala", "nao fala",
+                "não precisa falar", "nao precisa falar", "só texto",
+                "so texto", "apenas texto", "sem voz", "silêncio", "silencio",
+                "não quero ouvir", "nao quero ouvir", "cala a boca",
+            ]
+            for cmd in no_speak:
+                if cmd in text_lower:
+                    return False
+            return True
+        
+        return False
+        
+    def _extract_speak_text(self, text: str) -> Optional[str]:
+        """
+        Se o usuário disse 'fale X', extrai o X para falar.
+        Exemplo: 'fale olá mundo' -> 'olá mundo'
+        """
+        text_lower = text.lower().strip()
+        
+        prefixes = [
+            "fale ", "fala ", "diga ", "diz ",
+            "fale isso: ", "fala isso: ", "fale isso ", "fala isso ",
+            "pronuncie ", "fale em voz alta ",
+        ]
+        
+        for prefix in prefixes:
+            if text_lower.startswith(prefix):
+                extracted = text[len(prefix):].strip()
+                if extracted:
+                    return extracted
+        
+        return None
 
     async def _extract_memories(self, user_msg: str, response: str) -> None:
         """Extrai e salva memórias importantes da conversa."""
@@ -180,6 +285,21 @@ class ShazBrain:
             user_id=self._user_id,
             importance=0.3,
         )
+
+    # ─── Controle de fala sob demanda ─────────────────────────────────
+
+    def enable_auto_speak(self, enabled: bool = True) -> None:
+        """
+        Ativa/desativa o modo de fala automática.
+        Quando desativado (padrão), a Shaz só fala quando o usuário pede.
+        Quando ativado, a Shaz fala toda resposta automaticamente.
+        """
+        self._auto_speak_enabled = enabled
+        logger.voice(f"Auto-speak {'ativado' if enabled else 'desativado'}")
+
+    @property
+    def is_auto_speak_enabled(self) -> bool:
+        return self._auto_speak_enabled
 
     async def process_voice(self) -> None:
         """
@@ -276,14 +396,28 @@ class ShazBrain:
             await self._speak_queue.join()
 
     async def _speak_worker(self) -> None:
-        """Trabalhador em segundo plano que processa a fila de fala sequencialmente."""
+        """
+        Trabalhador em segundo plano que processa a fila de fala sequencialmente.
+        
+        Usa VoiceManager.speak_text() que já faz fallback:
+            1. Se voz clonada estiver ativa → tenta voz clonada
+            2. Se falhar → fallback Edge TTS
+            3. Se Edge TTS falhar → fallback Piper/XTTS
+        """
         if self._speak_queue is None:
             return
         while True:
             text = await self._speak_queue.get()
             try:
                 self._notify_status("speaking")
-                audio = await self._tts.synthesize(text)
+                
+                # Usa VoiceManager que tem fallback inteligente
+                audio = await self._voice_manager.speak_text(text)
+                
+                # Fallback direto para TTSManager caso VoiceManager retorne None
+                if not audio:
+                    audio = await self._tts.synthesize(text)
+                
                 if audio:
                     # Executa o player síncrono em uma thread para não travar o loop principal
                     await asyncio.to_thread(self._audio.player.play_bytes, audio)
@@ -363,6 +497,11 @@ class ShazBrain:
     @property
     def config(self) -> Config:
         return self._config
+
+    @property
+    def voice_manager(self):
+        """Acesso ao VoiceManager (TTS + clonagem de voz)."""
+        return self._voice_manager
 
 
 # ─── Factory ──────────────────────────────────────────────────────────────

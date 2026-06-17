@@ -1,0 +1,26 @@
+# discord_bot/requirements.txt
+# Dependencias exclusivas do bot Discord
+# Instale com: pip install -r discord_bot/requirements.txt
+
+# Discord
+discord.py>=2.3.0          # biblioteca principal
+PyNaCl>=1.5.0              # necessario para voz no Discord
+
+# HTTP (ja tem no projeto principal, mas listado por completeza)
+httpx>=0.27
+
+# TTS local (fallback quando o backend não responde)
+edge-tts>=6.1
+
+# Audio
+# FFmpeg: instale separado em https://ffmpeg.org/download.html
+# No Windows: winget install ffmpeg
+# No Linux:   apt install ffmpeg
+
+# Config (ja tem no projeto principal)
+pydantic-settings>=2.0
+python-dotenv>=1.0
+
+# Testes
+pytest>=8.1
+pytest-asyncio>=0.23
