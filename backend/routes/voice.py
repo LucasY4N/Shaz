@@ -74,6 +74,35 @@ def register(app_state: dict):
                         pass
         return ActionResponse(status="ok", message="Fala interrompida")
 
+    @router.post("/disable_auto", response_model=ActionResponse)
+    async def disable_auto_voice() -> ActionResponse:
+        """Desabilita completamente a fala automática."""
+        brain = app_state.get("brain")
+        if brain and hasattr(brain, "enable_auto_speak"):
+            brain.enable_auto_speak(False)
+        # Para qualquer fala em andamento
+        if brain:
+            if hasattr(brain, "_audio") and brain._audio:
+                brain._audio.player.stop()
+            if hasattr(brain, "_speak_queue") and brain._speak_queue:
+                while not brain._speak_queue.empty():
+                    try:
+                        brain._speak_queue.get_nowait()
+                    except Exception:
+                        pass
+        return ActionResponse(status="ok", message="Fala automática desabilitada")
+
+    @router.post("/set_cloned", response_model=ActionResponse)
+    async def set_cloned_voice(req: VoiceRequest) -> ActionResponse:
+        """Configura para usar uma voz clonada pelo ID do perfil."""
+        brain = app_state.get("brain")
+        if brain and hasattr(brain, "_voice_manager"):
+            vm = brain._voice_manager
+            if hasattr(vm, "set_cloned_profile"):
+                vm.set_cloned_profile(req.voice)
+                return ActionResponse(status="ok", message=f"Voz clonada configurada: {req.voice}")
+        return ActionResponse(status="error", message="VoiceManager não disponível")
+
     @router.get("/status")
     async def voice_status() -> dict:
         brain = app_state.get("brain")

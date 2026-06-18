@@ -4,75 +4,83 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shaz OS — NEXUS v3.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
+/* ── BLUE NEON THEME ──────────────────────────────────────────────────── */
 :root{
-  --bg-deep:#080c14;--bg-panel:#0d1220;--bg-card:#111827;--bg-input:#0a0f1a;
-  --pink:#ff4fa3;--purple:#c026d3;--cyan:#06b6d4;--green:#10b981;
-  --yellow:#f59e0b;--red:#ef4444;--orange:#f97316;
-  --border:rgba(255,79,163,0.15);--border2:rgba(255,79,163,0.4);
-  --text:#e2e8f0;--muted:#64748b;
-  --glow:0 0 20px rgba(255,79,163,0.35);
+  --bg-deep:#070b15;--bg-panel:#0c1225;--bg-card:#111a30;--bg-input:#0d1528;
+  --neon:#00d4ff;--neon-dark:#0099cc;--neon-light:#66e5ff;--neon-mid:#00b8e6;
+  --neon-glow:0 0 10px rgba(0,212,255,0.4),0 0 20px rgba(0,212,255,0.2);
+  --neon-glow-strong:0 0 15px rgba(0,212,255,0.6),0 0 30px rgba(0,212,255,0.3);
+  --neon-text-shadow:0 0 10px rgba(0,212,255,0.8),0 0 20px rgba(0,212,255,0.4);
+  --cyan:#00d4ff;--green:#00ff88;--yellow:#ffd700;--red:#ff3355;--orange:#ff7700;
+  --border:rgba(0,212,255,0.15);--border2:rgba(0,212,255,0.3);
+  --text:#e0e8f5;--muted:#7a8aa8;--muted-light:#4a5a78;
+  --glow:0 0 15px rgba(0,212,255,0.25);
+  --white:#0c1225;--off-white:#0a0f22;
+  --panel-blur:rgba(12,18,37,0.85);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg-deep);color:var(--text);font-family:'Exo 2',sans-serif;height:100vh;display:flex;overflow:hidden;position:relative;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,79,163,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,79,163,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:0;}
+body{background:var(--bg-deep);color:var(--text);font-family:'Inter',sans-serif;height:100vh;display:flex;overflow:hidden;position:relative;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;top:0;right:0;width:600px;height:600px;background:radial-gradient(circle,rgba(0,212,255,0.06) 0%,transparent 70%);pointer-events:none;z-index:0;}
 
 /* ── MODAL ── */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(6px);}
-.modal{background:var(--bg-panel);border:1px solid var(--border2);border-radius:18px;padding:36px 32px;width:400px;box-shadow:var(--glow),0 20px 60px rgba(0,0,0,0.7);position:relative;animation:modalIn .4s cubic-bezier(.16,1,.3,1);}
+.modal-overlay{position:fixed;inset:0;background:rgba(4,8,20,0.92);display:flex;align-items:center;justify-content:center;z-index:1000;backdrop-filter:blur(8px);}
+.modal{background:var(--bg-panel);border:1px solid var(--border2);border-radius:18px;padding:36px 32px;width:400px;box-shadow:var(--neon-glow-strong),0 20px 60px rgba(0,100,200,0.15);position:relative;animation:modalIn .4s cubic-bezier(.16,1,.3,1);}
 @keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.bk{position:absolute;width:14px;height:14px;border-color:rgba(255,79,163,0.4);border-style:solid;pointer-events:none;}
+.bk{position:absolute;width:14px;height:14px;border-color:var(--border2);border-style:solid;pointer-events:none;}
 .bk-tl{top:8px;left:8px;border-width:1px 0 0 1px}.bk-tr{top:8px;right:8px;border-width:1px 1px 0 0}
 .bk-bl{bottom:8px;left:8px;border-width:0 0 1px 1px}.bk-br{bottom:8px;right:8px;border-width:0 1px 1px 0}
-.m-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));padding:2px;margin:0 auto 18px;animation:rpulse 3s ease-in-out infinite;}
-@keyframes rpulse{0%,100%{box-shadow:0 0 15px rgba(255,79,163,0.5)}50%{box-shadow:0 0 30px rgba(255,79,163,0.9),0 0 60px rgba(192,38,211,0.3)}}
-.m-inner{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#1a1040,#0d1220);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--pink);text-shadow:var(--glow);}
-.m-title{font-family:'Orbitron',monospace;font-size:17px;font-weight:900;color:var(--pink);text-align:center;letter-spacing:3px;margin-bottom:6px;text-shadow:var(--glow);}
-.m-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);text-align:center;letter-spacing:2px;margin-bottom:24px;text-transform:uppercase;}
-.m-label{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:block;}
+.m-avatar{width:80px;height:80px;border-radius:50%;padding:3px;margin:0 auto 18px;position:relative;}
+.m-avatar::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon-dark));animation:rpulse 3s ease-in-out infinite;}
+.m-avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;position:relative;z-index:1;border:2px solid var(--bg-panel);}
+@keyframes rpulse{0%,100%{box-shadow:0 0 15px rgba(0,212,255,0.4),0 0 30px rgba(0,212,255,0.2)}50%{box-shadow:0 0 30px rgba(0,212,255,0.8),0 0 60px rgba(0,212,255,0.4)}}
+.m-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:900;color:var(--neon);text-align:center;letter-spacing:2px;margin-bottom:6px;text-shadow:var(--neon-text-shadow);}
+.m-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center;letter-spacing:2px;margin-bottom:24px;text-transform:uppercase;}
+.m-label{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--neon);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;display:block;text-shadow:0 0 5px rgba(0,212,255,0.5);}
 .pw{position:relative;margin-bottom:8px;}
-.modal input{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:12px 44px 12px 14px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:6px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.modal input:focus{border-color:var(--pink);box-shadow:var(--glow);}
-.modal input.err{border-color:var(--red);box-shadow:0 0 20px rgba(239,68,68,0.4);animation:shake .4s ease;}
+.modal input{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:12px 44px 12px 14px;color:var(--neon);font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:6px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.modal input:focus{border-color:var(--neon);box-shadow:var(--neon-glow);}
+.modal input.err{border-color:var(--red);box-shadow:0 0 20px rgba(255,51,85,0.5);animation:shake .4s ease;}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 .eyebtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;transition:color .2s;}
-.eyebtn:hover{color:var(--pink);}
-.errmsg{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--red);letter-spacing:1px;height:16px;margin-bottom:14px;display:flex;align-items:center;gap:4px;}
-.mbtn{width:100%;padding:13px;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;border-radius:10px;color:white;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;cursor:pointer;box-shadow:var(--glow);transition:all .2s;}
-.mbtn:hover{transform:scale(1.02);box-shadow:0 0 35px rgba(255,79,163,0.7);}
+.eyebtn:hover{color:var(--neon);}
+.errmsg{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--red);letter-spacing:1px;height:16px;margin-bottom:14px;display:flex;align-items:center;gap:4px;text-shadow:0 0 5px rgba(255,51,85,0.5);}
+.mbtn{width:100%;padding:13px;background:linear-gradient(135deg,var(--neon),var(--neon-dark));border:none;border-radius:10px;color:#0a0e1a;font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;cursor:pointer;box-shadow:var(--neon-glow);transition:all .2s;}
+.mbtn:hover{transform:scale(1.02);box-shadow:var(--neon-glow-strong);}
 
 /* ── SIDEBAR ── */
 .sidebar{width:220px;min-width:220px;background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;position:relative;z-index:10;}
 .sidebar-profile{padding:24px 16px 16px;display:flex;flex-direction:column;align-items:center;border-bottom:1px solid var(--border);}
-.av-ring{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));padding:2px;animation:rpulse 3s ease-in-out infinite;}
-.av-inner{width:100%;height:100%;border-radius:50%;background:linear-gradient(135deg,#1a1040,#0d1220);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--pink);text-shadow:var(--glow);letter-spacing:-2px;}
-.pname{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--pink);margin-top:12px;text-shadow:var(--glow);letter-spacing:3px;}
-.psub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-top:4px;}
+.av-ring{width:80px;height:80px;border-radius:50%;padding:3px;position:relative;}
+.av-ring::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon-dark));animation:rpulse 3s ease-in-out infinite;}
+.av-ring img{width:100%;height:100%;border-radius:50%;object-fit:cover;position:relative;z-index:1;border:2px solid var(--bg-panel);}
+.pname{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--neon);margin-top:12px;letter-spacing:1.5px;text-shadow:var(--neon-text-shadow);}
+.psub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:4px;}
 .sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
-.nav-item{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;cursor:pointer;transition:all .2s;border-left:2px solid transparent;font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.5px;}
-.nav-item:hover{background:rgba(255,79,163,0.05);color:var(--text);border-left-color:rgba(255,79,163,0.4);}
-.nav-item.active{background:rgba(255,79,163,0.08);color:var(--pink);border-left-color:var(--pink);}
+.nav-item{display:flex;align-items:center;justify-content:space-between;padding:9px 18px;cursor:pointer;transition:all .2s;border-left:2px solid transparent;font-size:13px;color:var(--muted);font-weight:500;letter-spacing:.3px;}
+.nav-item:hover{background:rgba(0,212,255,0.04);color:var(--text);border-left-color:var(--neon);}
+.nav-item.active{background:rgba(0,212,255,0.06);color:var(--neon);border-left-color:var(--neon);font-weight:600;text-shadow:0 0 5px rgba(0,212,255,0.3);}
 .nav-left{display:flex;align-items:center;gap:10px;}
-.nav-icon{width:16px;height:16px;opacity:.65;}
-.nav-item.active .nav-icon{opacity:1;}
-.nav-soon{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--yellow);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:2px 5px;border-radius:4px;letter-spacing:1px;}
+.nav-icon{width:16px;height:16px;opacity:.6;}
+.nav-item.active .nav-icon{opacity:1;color:var(--neon);}
+.nav-soon{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--yellow);background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);padding:2px 5px;border-radius:4px;letter-spacing:1px;}
 .status-bar{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;}
-.sdot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s ease-in-out infinite;}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green),0 0 20px var(--green);animation:blink 2s ease-in-out infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-.stext{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:1px;line-height:1.3;}
+.stext{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:1px;line-height:1.3;text-shadow:0 0 5px rgba(0,255,136,0.3);}
 
 /* ── MAIN ── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:10;}
 .topbar{padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg-panel);flex-shrink:0;}
 .topbar-left{display:flex;align-items:center;gap:10px;}
-.top-icon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));display:flex;align-items:center;justify-content:center;font-size:14px;}
-.top-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--text);letter-spacing:2px;}
-.top-model{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.top-icon{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon-dark));display:flex;align-items:center;justify-content:center;font-size:14px;color:#0a0e1a;box-shadow:var(--neon-glow);}
+.top-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--text);letter-spacing:1px;}
+.top-model{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
 .topbar-right{display:flex;align-items:center;gap:8px;}
-.tbtn{height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-size:13px;padding:0 10px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;gap:5px;}
-.tbtn:hover{border-color:var(--pink);color:var(--pink);box-shadow:var(--glow);}
+.tbtn{height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-size:13px;padding:0 10px;font-family:'JetBrains Mono',monospace;letter-spacing:1px;gap:5px;}
+.tbtn:hover{border-color:var(--neon);color:var(--neon);box-shadow:var(--neon-glow);}
 .tbtn.icon{width:32px;padding:0;}
 
 /* ── PANELS ── */
@@ -84,168 +92,177 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .chat-area{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
 .chat-area::-webkit-scrollbar{width:4px;}
 .chat-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.info-card{border-radius:10px;border:1px solid var(--border);background:var(--bg-card);overflow:hidden;}
+.info-card{border-radius:10px;border:1px solid var(--border);background:var(--bg-card);overflow:hidden;box-shadow:0 0 10px rgba(0,212,255,0.05);}
 .card-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;}
-.card-hdr:hover{background:rgba(255,79,163,0.04);}
-.card-left{display:flex;align-items:center;gap:8px;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
+.card-hdr:hover{background:rgba(0,212,255,0.04);}
+.card-left{display:flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;}
 .cardot{width:8px;height:8px;border-radius:50%;}
-.dp{background:var(--pink);box-shadow:0 0 6px var(--pink);}.dy{background:var(--yellow);box-shadow:0 0 6px var(--yellow);}.db{background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
-.ccount{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-left:4px;}
+.db{background:var(--neon);box-shadow:0 0 10px var(--neon);}.dy{background:var(--yellow);box-shadow:0 0 10px var(--yellow);}.dc{background:var(--cyan);box-shadow:0 0 10px var(--cyan);}
+.ccount{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-left:4px;}
 .chev{color:var(--muted);font-size:12px;transition:transform .3s;}
 .chev.open{transform:rotate(180deg);}
 .card-body{display:none;padding:8px 14px 12px;border-top:1px solid var(--border);}
 .card-body.open{display:block;}
 .tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
-.tag{padding:3px 10px;border-radius:20px;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.5px;}
-.tp{background:rgba(255,79,163,0.15);color:var(--pink);border:1px solid rgba(255,79,163,0.3);}
-.ty{background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3);}
-.tb{background:rgba(6,182,212,0.15);color:var(--cyan);border:1px solid rgba(6,182,212,0.3);}
-.tg{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
+.tag{padding:3px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.3px;}
+.tb{background:rgba(0,212,255,0.1);color:var(--neon);border:1px solid rgba(0,212,255,0.25);}
+.ty{background:rgba(255,215,0,0.1);color:var(--yellow);border:1px solid rgba(255,215,0,0.25);}
+.tc{background:rgba(0,212,255,0.08);color:var(--cyan);border:1px solid rgba(0,212,255,0.2);}
+.tg{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.25);}
 .ai-msg{display:flex;flex-direction:column;gap:8px;animation:fsi .4s ease-out;}
 @keyframes fsi{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-.ai-text{font-size:14px;line-height:1.75;color:var(--text);padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;border-left:3px solid var(--pink);}
-.ai-text strong{color:var(--pink);font-weight:700;}
+.ai-text{font-size:14px;line-height:1.75;color:var(--text);padding:14px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;border-left:3px solid var(--neon);box-shadow:0 0 10px rgba(0,212,255,0.05);}
+.ai-text strong{color:var(--neon);font-weight:700;text-shadow:0 0 5px rgba(0,212,255,0.3);}
 .ai-text ol,.ai-text ul{margin:8px 0 8px 18px;display:flex;flex-direction:column;gap:6px;}
-.user-msg{align-self:flex-end;background:rgba(255,79,163,0.1);border:1px solid rgba(255,79,163,0.3);border-radius:10px;padding:10px 14px;font-size:14px;max-width:75%;animation:fsi .3s ease-out;}
-.thinking{display:flex;align-items:center;gap:8px;padding:8px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px;}
+.user-msg{align-self:flex-end;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:10px;padding:10px 14px;font-size:14px;max-width:75%;animation:fsi .3s ease-out;}
+.thinking{display:flex;align-items:center;gap:8px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--neon);letter-spacing:1px;text-shadow:0 0 5px rgba(0,212,255,0.3);}
 .dots span{animation:db 1.4s ease-in-out infinite;font-size:18px;line-height:0;}
 .dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
 @keyframes db{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
 /* Voice player */
-.vplayer{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;animation:fsi .4s ease-out;}
+.vplayer{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;animation:fsi .4s ease-out;box-shadow:0 0 10px rgba(0,212,255,0.05);}
 .vtop{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.vic{width:32px;height:32px;border-radius:50%;background:var(--bg-panel);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--pink);cursor:pointer;font-size:14px;}
-.vlabel{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--pink);letter-spacing:2px;}
-.vbadge{padding:2px 8px;background:rgba(16,185,129,0.2);border:1px solid rgba(16,185,129,0.4);border-radius:20px;font-size:9px;color:var(--green);font-family:'Share Tech Mono',monospace;letter-spacing:1px;margin-left:4px;}
+.vic{width:32px;height:32px;border-radius:50%;background:var(--bg-input);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--neon);cursor:pointer;font-size:14px;}
+.vlabel{font-family:'Outfit',sans-serif;font-size:11px;font-weight:700;color:var(--neon);letter-spacing:1px;text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.vbadge{padding:2px 8px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:20px;font-size:9px;color:var(--green);font-family:'JetBrains Mono',monospace;letter-spacing:1px;margin-left:4px;}
 .vctrl{display:flex;align-items:center;gap:8px;flex:1;justify-content:flex-end;}
 .cbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px;transition:color .2s;}
-.cbtn:hover{color:var(--text);}
-.playbtn{width:34px;height:34px;border-radius:50%;background:var(--pink);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;box-shadow:var(--glow);transition:all .2s;}
-.playbtn:hover{transform:scale(1.1);}
-.vtts{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
+.cbtn:hover{color:var(--neon);}
+.playbtn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--neon),var(--neon-dark));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0a0e1a;font-size:14px;box-shadow:var(--neon-glow);transition:all .2s;}
+.playbtn:hover{transform:scale(1.1);box-shadow:var(--neon-glow-strong);}
+.vtts{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;}
 .prow{display:flex;align-items:center;gap:8px;}
-.ptime{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);min-width:32px;}
-.pbar{flex:1;height:4px;background:rgba(255,79,163,0.15);border-radius:2px;cursor:pointer;}
-.pfill{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));border-radius:2px;width:0%;position:relative;}
-.pthumb{width:12px;height:12px;border-radius:50%;background:var(--pink);position:absolute;right:-6px;top:-4px;box-shadow:0 0 8px var(--pink);}
+.ptime{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);min-width:32px;}
+.pbar{flex:1;height:4px;background:rgba(0,212,255,0.1);border-radius:2px;cursor:pointer;}
+.pfill{height:100%;background:linear-gradient(90deg,var(--neon),var(--neon-light));border-radius:2px;width:0%;position:relative;}
+.pthumb{width:12px;height:12px;border-radius:50%;background:var(--neon);position:absolute;right:-6px;top:-4px;box-shadow:0 0 10px var(--neon),0 0 20px var(--neon);}
 
 /* ── INPUT ── */
 .input-bar{padding:12px 20px 16px;border-top:1px solid var(--border);background:var(--bg-panel);flex-shrink:0;}
 .iwrap{display:flex;align-items:center;gap:10px;background:var(--bg-input);border:1px solid var(--border);border-radius:12px;padding:10px 14px;transition:border-color .2s;}
-.iwrap:focus-within{border-color:rgba(255,79,163,0.5);box-shadow:0 0 20px rgba(255,79,163,0.1);}
+.iwrap:focus-within{border-color:var(--neon);box-shadow:var(--neon-glow);}
 .ibtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px;transition:color .2s;display:flex;align-items:center;}
-.ibtn:hover{color:var(--pink);}
+.ibtn:hover{color:var(--neon);}
 .ibtn.recording{color:var(--red);animation:blink 1s ease-in-out infinite;}
-.chat-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;font-family:'Exo 2',sans-serif;caret-color:var(--pink);}
-.chat-input::placeholder{color:var(--muted);font-size:13px;}
-.sendbtn{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;box-shadow:var(--glow);transition:all .2s;flex-shrink:0;}
-.sendbtn:hover{transform:scale(1.05);}
+.chat-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;caret-color:var(--neon);}
+.chat-input::placeholder{color:var(--muted-light);font-size:13px;}
+.sendbtn{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--neon),var(--neon-dark));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0a0e1a;font-size:16px;box-shadow:var(--neon-glow);transition:all .2s;flex-shrink:0;}
+.sendbtn:hover{transform:scale(1.05);box-shadow:var(--neon-glow-strong);}
 .sendbtn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 
 /* ── GENERIC PANEL STYLES ── */
 .panel-inner{flex:1;overflow-y:auto;padding:20px;}
 .panel-inner::-webkit-scrollbar{width:4px;}
 .panel-inner::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
-.p-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--pink);letter-spacing:3px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);}
-.p-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;}
-.p-card-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.p-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--neon);letter-spacing:1.5px;margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.p-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;box-shadow:0 0 10px rgba(0,212,255,0.05);}
+.p-card-title{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--neon);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;text-shadow:0 0 5px rgba(0,212,255,0.3);}
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
-.stat-box{background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;padding:12px;}
-.stat-label{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
-.stat-val{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;color:var(--pink);}
-.stat-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
+.stat-box{background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;padding:12px;box-shadow:0 0 10px rgba(0,212,255,0.03);}
+.stat-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;}
+.stat-val{font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--neon);text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.stat-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;}
 .bar-wrap{margin-bottom:8px;}
-.bar-label{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;}
-.bar-bg{height:6px;background:rgba(255,255,255,0.05);border-radius:3px;}
+.bar-label{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;}
+.bar-bg{height:6px;background:rgba(0,212,255,0.08);border-radius:3px;}
 .bar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
-.bar-pink{background:linear-gradient(90deg,var(--pink),var(--purple));}
-.bar-cyan{background:linear-gradient(90deg,var(--cyan),#0ea5e9);}
-.bar-green{background:linear-gradient(90deg,var(--green),#059669);}
-.mem-entry{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start;}
+.bar-blue{background:linear-gradient(90deg,var(--neon),var(--neon-light));box-shadow:0 0 8px rgba(0,212,255,0.4);}
+.bar-cyan{background:linear-gradient(90deg,var(--cyan),#66e5ff);box-shadow:0 0 8px rgba(0,212,255,0.4);}
+.bar-green{background:linear-gradient(90deg,var(--green),#00ffaa);box-shadow:0 0 8px rgba(0,255,136,0.4);}
+.mem-entry{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.08);align-items:flex-start;}
 .mem-entry:last-child{border-bottom:none;}
-.mem-type{font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;}
+.mem-type{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;}
 .mem-content{font-size:13px;color:var(--text);line-height:1.5;}
-.mem-time{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
-.log-entry{font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03);display:flex;gap:10px;}
+.mem-time{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px;}
+.log-entry{font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 0;border-bottom:1px solid rgba(0,212,255,0.05);display:flex;gap:10px;}
 .log-time{color:var(--muted);flex-shrink:0;width:60px;}
 .log-level{flex-shrink:0;width:55px;font-weight:700;}
 .log-msg{color:var(--text);word-break:break-all;}
-.provider-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.provider-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,212,255,0.08);}
 .provider-row:last-child{border-bottom:none;}
-.provider-name{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;}
-.provider-status{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;}
-.ps-ok{background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);}
-.ps-no{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);}
-.ps-primary{background:rgba(255,79,163,0.15);color:var(--pink);border:1px solid rgba(255,79,163,0.3);}
-.toggle-btn{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-panel);color:var(--text);cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;transition:all .2s;margin-top:6px;}
-.toggle-btn:hover{border-color:var(--pink);color:var(--pink);}
-.toggle-btn.active{background:rgba(255,79,163,0.1);border-color:var(--pink);color:var(--pink);}
+.provider-name{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;}
+.provider-status{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:20px;}
+.ps-ok{background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.25);text-shadow:0 0 5px rgba(0,255,136,0.3);}
+.ps-no{background:rgba(255,51,85,0.1);color:var(--red);border:1px solid rgba(255,51,85,0.25);}
+.ps-primary{background:rgba(0,212,255,0.1);color:var(--neon);border:1px solid rgba(0,212,255,0.25);}
+.toggle-btn{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-panel);color:var(--text);cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;transition:all .2s;margin-top:6px;}
+.toggle-btn:hover{border-color:var(--neon);color:var(--neon);box-shadow:var(--neon-glow);}
+.toggle-btn.active{background:rgba(0,212,255,0.06);border-color:var(--neon);color:var(--neon);box-shadow:var(--neon-glow);}
 .vm-device{display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
 .vm-dname{font-size:12px;color:var(--text);}
-.vm-dtype{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);}
-.vm-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-card);color:var(--muted);cursor:pointer;font-size:11px;transition:all .2s;font-family:'Share Tech Mono',monospace;}
+.vm-dtype{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);}
+.vm-btn{padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-panel);color:var(--muted);cursor:pointer;font-size:11px;transition:all .2s;font-family:'JetBrains Mono',monospace;}
 .vm-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-.vm-btn.sel{background:rgba(6,182,212,0.15);border-color:var(--cyan);color:var(--cyan);}
-.trait-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.vm-btn.sel{background:rgba(0,212,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+.trait-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(0,212,255,0.08);}
 .trait-row:last-child{border-bottom:none;}
-.trait-key{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);width:130px;flex-shrink:0;}
+.trait-key{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);width:130px;flex-shrink:0;}
 .trait-val{flex:1;font-size:13px;color:var(--text);}
 .trait-edit{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px;}
-.trait-edit:hover{color:var(--pink);}
-.soon-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:24px;text-align:center;margin:20px 0;}
+.trait-edit:hover{color:var(--neon);}
+.soon-banner{background:rgba(255,215,0,0.03);border:1px solid rgba(255,215,0,0.1);border-radius:10px;padding:24px;text-align:center;margin:20px 0;}
 .soon-icon{font-size:36px;margin-bottom:12px;}
-.soon-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--yellow);letter-spacing:3px;margin-bottom:8px;}
+.soon-title{font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;color:var(--yellow);letter-spacing:2px;margin-bottom:8px;text-shadow:0 0 5px rgba(255,215,0,0.3);}
 .soon-text{font-size:13px;color:var(--muted);line-height:1.6;}
-.action-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;border-radius:8px;border:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;transition:all .2s;margin-top:8px;}
-.abtn-pink{background:linear-gradient(135deg,var(--pink),var(--purple));color:white;box-shadow:var(--glow);}
-.abtn-pink:hover{transform:scale(1.02);}
+.action-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;border-radius:8px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;transition:all .2s;margin-top:8px;}
+.abtn-blue{background:linear-gradient(135deg,var(--neon),var(--neon-dark));color:#0a0e1a;box-shadow:var(--neon-glow);}
+.abtn-blue:hover{transform:scale(1.02);box-shadow:var(--neon-glow-strong);}
 .abtn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
-.abtn-outline:hover{border-color:var(--pink);color:var(--pink);}
+.abtn-outline:hover{border-color:var(--neon);color:var(--neon);box-shadow:var(--neon-glow);}
+.abtn-red{background:linear-gradient(135deg,var(--red),#cc2244);color:white;box-shadow:0 0 15px rgba(255,51,85,0.3);}
+.abtn-red:hover{transform:scale(1.02);box-shadow:0 0 25px rgba(255,51,85,0.5);}
+.abtn-green{background:linear-gradient(135deg,var(--green),#00cc77);color:#0a0e1a;box-shadow:0 0 15px rgba(0,255,136,0.3);}
+.abtn-green:hover{transform:scale(1.02);box-shadow:0 0 25px rgba(0,255,136,0.5);}
 
 /* ── FLOATING STOP BUTTON ── */
-.stop-float-btn{position:fixed;bottom:90px;right:30px;z-index:999;width:56px;height:56px;border-radius:50%;background:var(--red);border:2px solid rgba(239,68,68,0.6);color:white;font-size:22px;cursor:pointer;box-shadow:0 0 25px rgba(239,68,68,0.5);display:none;align-items:center;justify-content:center;transition:all .2s;animation:floatPulse 1.5s ease-in-out infinite;}
-.stop-float-btn:hover{transform:scale(1.1);box-shadow:0 0 35px rgba(239,68,68,0.8);}
-@keyframes floatPulse{0%,100%{box-shadow:0 0 20px rgba(239,68,68,0.4)}50%{box-shadow:0 0 35px rgba(239,68,68,0.8)}}
+.stop-float-btn{position:fixed;bottom:90px;right:30px;z-index:999;width:56px;height:56px;border-radius:50%;background:var(--red);border:2px solid rgba(255,51,85,0.5);color:white;font-size:22px;cursor:pointer;box-shadow:0 0 25px rgba(255,51,85,0.4);display:none;align-items:center;justify-content:center;transition:all .2s;animation:floatPulse 1.5s ease-in-out infinite;}
+.stop-float-btn:hover{transform:scale(1.1);box-shadow:0 0 35px rgba(255,51,85,0.7);}
+@keyframes floatPulse{0%,100%{box-shadow:0 0 15px rgba(255,51,85,0.3)}50%{box-shadow:0 0 30px rgba(255,51,85,0.7)}}
 
 /* scrollbar global */
-::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,79,163,0.2);border-radius:2px;}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
 /* ── TERMINAL ── */
 .term-wrap{display:flex;flex-direction:column;height:100%;}
 .term-header{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .term-header-left{display:flex;align-items:center;gap:10px;}
 .term-dots{display:flex;gap:6px;}
-.term-dot{width:12px;height:12px;border-radius:50%;}
-.term-dot.red{background:#ef4444;}.term-dot.yellow{background:#f59e0b;}.term-dot.green{background:#10b981;}
-.term-title{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:var(--pink);letter-spacing:3px;}
-.term-cwd{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
+.term-dot{width:12px;height:12px;border-radius:50%;
+box-shadow:0 0 6px currentColor;}
+.term-dot.red{background:#ff3355;color:#ff3355;box-shadow:0 0 8px #ff3355;}.term-dot.yellow{background:#ffd700;color:#ffd700;box-shadow:0 0 8px #ffd700;}.term-dot.green{background:#00ff88;color:#00ff88;box-shadow:0 0 8px #00ff88;}
+.term-title{font-family:'Outfit',sans-serif;font-size:13px;font-weight:700;color:var(--neon);letter-spacing:1.5px;text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.term-cwd{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:2px;}
 .term-actions{display:flex;gap:6px;}
-.term-out{flex:1;overflow-y:auto;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.85;background:var(--bg-deep);word-break:break-all;}
+.term-out{flex:1;overflow-y:auto;padding:14px 20px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.85;background:var(--bg-deep);word-break:break-all;}
 .term-out::-webkit-scrollbar{width:3px;}
-.term-out::-webkit-scrollbar-thumb{background:rgba(255,79,163,0.15);}
+.term-out::-webkit-scrollbar-thumb{background:var(--border);}
 .term-line{display:block;animation:termFade .2s ease-out;}
 @keyframes termFade{from{opacity:0;transform:translateX(-4px)}to{opacity:1;transform:none}}
-.term-line.cmd{color:var(--pink);}
-.term-line.out{color:#d4d4d4;}
+.term-line.cmd{color:var(--neon);text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.term-line.out{color:#b0c0d8;}
 .term-line.err{color:var(--red);}
 .term-line.info{color:var(--cyan);}
 .term-line.warn{color:var(--yellow);}
 .term-line.success{color:var(--green);}
-.term-line.system{color:var(--purple);}
+.term-line.system{color:var(--neon);}
 .term-line.blank{height:6px;display:block;}
 .term-input-bar{flex-shrink:0;border-top:1px solid var(--border);background:var(--bg-panel);padding:10px 20px;display:flex;align-items:center;gap:10px;}
-.term-prompt{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--pink);white-space:nowrap;flex-shrink:0;text-shadow:0 0 8px rgba(255,79,163,0.5);}
-.term-prompt span{color:var(--cyan);}
-.term-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;caret-color:var(--pink);}
-.term-input::placeholder{color:var(--muted);}
-.term-send{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;flex-shrink:0;transition:all .2s;box-shadow:0 0 12px rgba(255,79,163,0.3);}
-.term-send:hover{transform:scale(1.08);}
-.term-kill{padding:0 12px;height:32px;border-radius:8px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.08);color:var(--red);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:none;}
+.term-prompt{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--neon);white-space:nowrap;flex-shrink:0;text-shadow:0 0 5px rgba(0,212,255,0.3);}
+.term-prompt span{color:var(--neon-light);}
+.term-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;caret-color:var(--neon);}
+.term-input::placeholder{color:var(--muted-light);}
+.term-send{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--neon),var(--neon-dark));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#0a0e1a;font-size:14px;flex-shrink:0;transition:all .2s;box-shadow:var(--neon-glow);}
+.term-send:hover{transform:scale(1.08);box-shadow:var(--neon-glow-strong);}
+.term-kill{padding:0 12px;height:32px;border-radius:8px;border:1px solid rgba(255,51,85,0.3);background:rgba(255,51,85,0.06);color:var(--red);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;display:none;}
 .term-kill.visible{display:flex;align-items:center;gap:5px;}
-.term-kill:hover{background:rgba(239,68,68,0.2);border-color:var(--red);}
-.term-cursor{display:inline-block;width:8px;height:14px;background:var(--pink);vertical-align:middle;animation:termBlink .8s step-end infinite;margin-left:2px;}
+.term-kill:hover{background:rgba(255,51,85,0.12);border-color:var(--red);}
+.term-cursor{display:inline-block;width:8px;height:14px;background:var(--neon);vertical-align:middle;animation:termBlink .8s step-end infinite;margin-left:2px;box-shadow:0 0 8px var(--neon);}
 @keyframes termBlink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── NEON DECORATIONS ── */
+.neon-border{position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0.5;}
+.neon-accent{position:absolute;top:0;left:0;width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--neon),transparent);opacity:0.3;}
 </style>
 </head>
 <body>
@@ -255,7 +272,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   <div class="modal">
     <div class="bk bk-tl"></div><div class="bk bk-tr"></div>
     <div class="bk bk-bl"></div><div class="bk bk-br"></div>
-    <div class="m-avatar"><div class="m-inner">SZ</div></div>
+    <div class="m-avatar"><img src="assets/shaz_logo.png" alt="Shaz"></div>
     <div class="m-title">SHAZ OS</div>
     <div class="m-sub">NEXUS v3.0 — ACESSO RESTRITO</div>
     <label class="m-label">Senha de Acesso</label>
@@ -272,7 +289,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-profile">
-    <div class="av-ring"><div class="av-inner">SZ</div></div>
+    <div class="av-ring"><img src="assets/shaz_logo.png" alt="Shaz"></div>
     <div class="pname">SHAZ OS</div>
     <div class="psub">NEXUS v3.0</div>
   </div>
@@ -324,7 +341,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="1.5" stroke-linecap="round"/></svg>
         Discord Bot
       </div>
-      <span style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--yellow);background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);padding:2px 5px;border-radius:4px;letter-spacing:1px;" id="discordNavBadge">OFF</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--yellow);background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);padding:2px 5px;border-radius:4px;letter-spacing:1px;" id="discordNavBadge">OFF</span>
     </div>
     <div class="nav-item" data-panel="vtube" onclick="goPanel('vtube',this)">
       <div class="nav-left">
@@ -380,12 +397,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       </div>
     </div>
     <div class="topbar-right">
-      <button class="tbtn" id="voiceToggleBtn" onclick="toggleVoiceMode()" style="border-color:rgba(6,182,212,0.3);color:var(--cyan)" title="Ligar/Desligar Voz">
+      <button class="tbtn" id="voiceToggleBtn" onclick="toggleVoiceMode()" style="border-color:rgba(0,212,255,0.3);color:var(--neon)" title="Ligar/Desligar Voz">
         🎤 LIGAR VOZ
       </button>
       <button class="tbtn" onclick="clearCurrentPanel()">🗑 LIMPAR</button>
       <button class="tbtn icon" title="Configurações">⚙</button>
-      <button class="tbtn icon" style="color:var(--pink);border-color:rgba(255,79,163,0.3);" onclick="logout()" title="Sair">⏻</button>
+      <button class="tbtn icon" style="color:var(--neon);border-color:rgba(0,212,255,0.3);" onclick="logout()" title="Sair">⏻</button>
     </div>
   </div>
 
@@ -397,10 +414,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <div class="ai-msg">
           <div class="info-card">
             <div class="card-hdr" onclick="toggleCard(this)">
-              <div class="card-left"><div class="cardot dp"></div><span style="color:var(--pink)">SISTEMA</span><span class="ccount">NEXUS v3.0</span></div>
+              <div class="card-left"><div class="cardot db"></div><span style="color:var(--neon)">SISTEMA</span><span class="ccount">NEXUS v3.0</span></div>
               <span class="chev">▼</span>
             </div>
-            <div class="card-body"><div class="tag-row"><span class="tag tp">Conectado ao backend Python</span></div></div>
+            <div class="card-body"><div class="tag-row"><span class="tag tb">Conectado ao backend Python</span></div></div>
           </div>
           <div class="ai-text">Oi! Eu sou a <strong>Shaz</strong> — sua IA pessoal do NEXUS v3.0. 🌸<br><br>Estou rodando no servidor Python real! Pode me chamar pro que quiser.</div>
         </div>
@@ -427,15 +444,15 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         </div>
         <div class="p-card">
           <div class="p-card-title">Status dos Serviços</div>
-          <div class="provider-row"><span class="provider-name">TTS (Edge/Piper/XTTS)</span><span class="provider-status ps-ok" id="st-tts">● ATIVO</span></div>
+          <div class="provider-row"><span class="provider-name">TTS (Coqui XTTS v2)</span><span class="provider-status ps-ok" id="st-tts">● ATIVO</span></div>
           <div class="provider-row"><span class="provider-name">STT (Faster-Whisper)</span><span class="provider-status ps-ok" id="st-stt">● ATIVO</span></div>
           <div class="provider-row"><span class="provider-name">SQLite Memória</span><span class="provider-status ps-ok">● ATIVO</span></div>
           <div class="provider-row"><span class="provider-name">API LLM</span><span class="provider-status ps-ok" id="st-api">● CONECTADO</span></div>
-          <div class="provider-row"><span class="provider-name">Voz</span><span class="provider-status" id="st-voice" style="background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3)">● INATIVO</span></div>
+          <div class="provider-row"><span class="provider-name">Voz</span><span class="provider-status" id="st-voice" style="background:rgba(255,215,0,0.08);color:var(--yellow);border:1px solid rgba(255,215,0,0.25)">● INATIVO</span></div>
         </div>
         <div class="p-card">
           <div class="p-card-title">Uso de Recursos</div>
-          <div class="bar-wrap"><div class="bar-label"><span>Contexto LLM</span><span id="ctx-pct">0%</span></div><div class="bar-bg"><div class="bar-fill bar-pink" id="ctx-bar" style="width:0%"></div></div></div>
+          <div class="bar-wrap"><div class="bar-label"><span>Contexto LLM</span><span id="ctx-pct">0%</span></div><div class="bar-bg"><div class="bar-fill bar-blue" id="ctx-bar" style="width:0%"></div></div></div>
           <div class="bar-wrap"><div class="bar-label"><span>Memória SQLite</span><span id="mem-pct">estável</span></div><div class="bar-bg"><div class="bar-fill bar-cyan" id="mem-bar" style="width:0%"></div></div></div>
         </div>
       </div>
@@ -448,19 +465,19 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <div class="p-card">
           <div class="p-card-title">Estado Atual</div>
           <div class="provider-row"><span class="provider-name">Status</span><span class="provider-status ps-ok">● ONLINE</span></div>
-          <div class="provider-row"><span class="provider-name">Provedor Ativo</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan)" id="br-prov">Carregando...</span></div>
-          <div class="provider-row"><span class="provider-name">Mensagens</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)" id="br-msg">0</span></div>
+          <div class="provider-row"><span class="provider-name">Provedor Ativo</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan)" id="br-prov">Carregando...</span></div>
+          <div class="provider-row"><span class="provider-name">Mensagens</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)" id="br-msg">0</span></div>
           <div class="provider-row"><span class="provider-name">Modo voz</span><span class="provider-status ps-no" id="br-voice">● INATIVO</span></div>
         </div>
         <div class="p-card">
           <div class="p-card-title">Engine TTS</div>
-          <button class="toggle-btn active" onclick="setEngine('edge',this)" id="eng-edge">Edge TTS ✓</button>
+          <button class="toggle-btn active" onclick="setEngine('xtts',this)" id="eng-xtts">Coqui XTTS v2 ✓</button>
+          <button class="toggle-btn" onclick="setEngine('edge',this)" id="eng-edge">Edge TTS (Fallback)</button>
           <button class="toggle-btn" onclick="setEngine('piper',this)" id="eng-piper">Piper TTS (Local)</button>
-          <button class="toggle-btn" onclick="setEngine('xtts',this)" id="eng-xtts">XTTS-v2 (Alta Qualidade)</button>
         </div>
         <div class="p-card">
           <div class="p-card-title">Ações Rápidas</div>
-          <button class="action-btn abtn-pink" onclick="goPanel('chat',document.querySelector('[data-panel=chat]'))">💬 Ir para o Chat</button>
+          <button class="action-btn abtn-blue" onclick="goPanel('chat',document.querySelector('[data-panel=chat]'))">💬 Ir para o Chat</button>
           <button class="action-btn abtn-outline" onclick="clearHistory()">🗑 Limpar Histórico</button>
           <button class="action-btn abtn-outline" onclick="goPanel('conexoes',document.querySelector('[data-panel=conexoes]'))">⚡ Trocar Provedor LLM</button>
         </div>
@@ -479,7 +496,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
           <div class="p-card-title">Últimas Memórias</div>
           <div id="mem-list">
             <div class="mem-entry">
-              <span class="mem-type tp">preference</span>
+              <span class="mem-type" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;background:rgba(0,212,255,0.1);color:var(--neon);border:1px solid rgba(0,212,255,0.25);">preference</span>
               <div><div class="mem-content">Nenhuma memória registrada ainda</div><div class="mem-time">—</div></div>
             </div>
           </div>
@@ -585,7 +602,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <div class="p-card">
           <div class="p-card-title">🎙 Configuração de Áudio</div>
           <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áudio gerenciado pelo backend Python (fala local).</div>
-          <button class="action-btn abtn-pink" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
+          <button class="action-btn abtn-blue" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
         </div>
       </div>
     </div>
@@ -594,33 +611,72 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     <div class="panel" id="panel-discord">
       <div class="panel-inner">
         <div class="p-title">💠 DISCORD BOT</div>
+        
+        <!-- Perfil do Bot -->
+        <div class="p-card" style="display:flex;align-items:center;gap:16px;padding:16px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#5865F2,#4752c4);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;box-shadow:0 0 20px rgba(88,101,242,0.3);">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.074.074 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-family:'Outfit',sans-serif;font-size:16px;font-weight:700;color:var(--text)">Shaz Bot</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.5px">#️⃣ Shaz#0000</div>
+            <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+              <span class="tag tb" style="font-size:9px">🤖 Bot</span>
+              <span class="tag tc" style="font-size:9px">💬 Chat + Voz</span>
+              <span class="tag" style="font-size:9px;background:rgba(88,101,242,0.1);color:#5865F2;border:1px solid rgba(88,101,242,0.25)">📥 Video Download</span>
+            </div>
+          </div>
+        </div>
+        
         <div class="p-card">
           <div class="p-card-title">Status do Bot</div>
           <div class="stat-grid">
             <div class="stat-box" style="text-align:center">
-              <div style="font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">STATUS</div>
-              <div style="font-size:16px;color:var(--yellow);font-family:'Orbitron',monospace;font-weight:700;letter-spacing:3px" id="discordStatusText">DESLIGADO</div>
+              <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">STATUS</div>
+              <div style="font-size:16px;color:var(--yellow);font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:1.5px" id="discordStatusText">DESLIGADO</div>
             </div>
             <div class="stat-box" style="text-align:center">
-              <div style="font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">SINAL</div>
-              <div style="font-size:20px;font-family:'Orbitron',monospace;font-weight:700" id="discordSignalText">—</div>
+              <div style="font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px">SINAL</div>
+              <div style="font-size:20px;font-family:'Outfit',sans-serif;font-weight:700" id="discordSignalText">—</div>
             </div>
           </div>
-          <div class="provider-row"><span class="provider-name">Token configurado</span><span class="provider-status" id="discordTokenStatus" style="background:rgba(245,158,11,0.15);color:var(--yellow);border:1px solid rgba(245,158,11,0.3)">● VERIFICANDO</span></div>
-          <div class="provider-row"><span class="provider-name">Thread ativa</span><span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted)" id="discordThreadStatus">—</span></div>
+          <div class="provider-row"><span class="provider-name">Token configurado</span><span class="provider-status" id="discordTokenStatus" style="background:rgba(255,215,0,0.08);color:var(--yellow);border:1px solid rgba(255,215,0,0.25)">● VERIFICANDO</span></div>
+          <div class="provider-row"><span class="provider-name">Thread ativa</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)" id="discordThreadStatus">—</span></div>
         </div>
         <div class="p-card">
           <div class="p-card-title">Controles</div>
-          <button class="action-btn abtn-pink" id="discordStartBtn" onclick="discordStart()">▶ INICIAR DISCORD BOT</button>
-          <button class="action-btn abtn-outline" id="discordStopBtn" onclick="discordStop()" style="border-color:rgba(239,68,68,0.4);color:var(--red)">⏹ PARAR DISCORD BOT</button>
+          <button class="action-btn abtn-blue" id="discordStartBtn" onclick="discordStart()">▶ INICIAR DISCORD BOT</button>
+          <button class="action-btn abtn-red" id="discordStopBtn" onclick="discordStop()">⏹ PARAR DISCORD BOT</button>
           <button class="action-btn abtn-outline" id="discordRefreshBtn" onclick="discordStatus()" style="margin-top:6px">🔄 Atualizar Status</button>
         </div>
         <div class="p-card">
+          <div class="p-card-title">📥 Download de Vídeo</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">
+            Envie um link do YouTube/TikTok/Instagram no chat do Discord para a Shaz baixar o vídeo automaticamente!
+          </div>
+          <div class="provider-row">
+            <span class="provider-name">YouTube</span>
+            <span class="provider-status ps-ok">● SUPORTADO</span>
+          </div>
+          <div class="provider-row">
+            <span class="provider-name">TikTok</span>
+            <span class="provider-status ps-ok">● SUPORTADO</span>
+          </div>
+          <div class="provider-row">
+            <span class="provider-name">Instagram</span>
+            <span class="provider-status ps-ok">● SUPORTADO</span>
+          </div>
+          <div class="provider-row">
+            <span class="provider-name">Twitter/X</span>
+            <span class="provider-status ps-ok">● SUPORTADO</span>
+          </div>
+        </div>
+        <div class="p-card">
           <div class="p-card-title">Mensagem do Sistema</div>
-          <div id="discordErrorMsg" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;word-break:break-all">
+          <div id="discordErrorMsg" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);line-height:1.6;word-break:break-all">
             O Discord bot não inicia automaticamente com o servidor.<br>
             Clique em <span style="color:var(--cyan)">▶ INICIAR DISCORD BOT</span> para ativar.<br><br>
-            Configure o <span style="color:var(--pink)">DISCORD_TOKEN</span> no arquivo <span style="color:var(--yellow)">.env</span>.
+            Configure o <span style="color:var(--neon)">DISCORD_TOKEN</span> no arquivo <span style="color:var(--yellow)">.env</span>.
           </div>
         </div>
       </div>
@@ -655,22 +711,30 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
       <div class="panel-inner">
         <div class="p-title">👤 PERSONALIZAÇÃO</div>
         <div class="p-card">
-          <div class="p-card-title">Voz da Shaz (Edge TTS)</div>
+          <div class="p-card-title">Voz da Shaz (Coqui XTTS v2)</div>
           <div style="margin-bottom:10px">
-            <label style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px">VOZ ATUAL</label>
-            <select id="voiceSelect" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;" onchange="setVoice(this.value)">
+            <label style="font-size:11px;color:var(--neon);font-family:'JetBrains Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px;text-shadow:0 0 5px rgba(0,212,255,0.3);">ENGINE TTS</label>
+            <select id="engineSelect" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" onchange="setEngineSelect(this.value)">
+              <option value="xtts">Coqui XTTS v2 (Primário — Alta Qualidade)</option>
+              <option value="edge">Edge TTS (Fallback)</option>
+              <option value="piper">Piper TTS (Local)</option>
+            </select>
+          </div>
+          <div style="margin-bottom:10px">
+            <label style="font-size:11px;color:var(--neon);font-family:'JetBrains Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px;text-shadow:0 0 5px rgba(0,212,255,0.3);">VOZ EDGE TTS (fallback)</label>
+            <select id="voiceSelect" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;" onchange="setVoice(this.value)">
               <option value="pt-BR-FranciscaNeural">pt-BR-FranciscaNeural (Feminina — Padrão)</option>
               <option value="pt-BR-ThalitaNeural">pt-BR-ThalitaNeural (Feminina)</option>
               <option value="pt-BR-AntonioNeural">pt-BR-AntonioNeural (Masculina)</option>
               <option value="pt-PT-FernandaNeural">pt-PT-FernandaNeural (Portuguesa)</option>
             </select>
           </div>
-          <button class="action-btn abtn-pink" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
+          <button class="action-btn abtn-blue" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
         </div>
         <div class="p-card">
           <div class="p-card-title">System Prompt / Lore</div>
-          <textarea id="loreEdit" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;resize:vertical;min-height:120px;line-height:1.6;" placeholder="Edite o system prompt da Shaz aqui...">Você é a Shaz, uma IA de Pyxis-7 que veio parar na Terra. Inteligente, tímida, especialista em tecnologia. Responda sempre em português brasileiro.</textarea>
-          <button class="action-btn abtn-pink" style="margin-top:8px" onclick="saveSystemPrompt()">💾 Salvar Prompt no Backend</button>
+          <textarea id="loreEdit" style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;min-height:120px;line-height:1.6;" placeholder="Edite o system prompt da Shaz aqui...">Você é a Shaz, uma IA de Pyxis-7 que veio parar na Terra. Inteligente, tímida, especialista em tecnologia. Responda sempre em português brasileiro.</textarea>
+          <button class="action-btn abtn-blue" style="margin-top:8px" onclick="saveSystemPrompt()">💾 Salvar Prompt no Backend</button>
         </div>
       </div>
     </div>
@@ -681,12 +745,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
           <div class="p-title" style="margin:0">📋 LOGS DO SISTEMA</div>
           <div style="display:flex;gap:8px">
-            <button class="tbtn" onclick="filterLogs('all')" id="fl-all" style="border-color:var(--pink);color:var(--pink)">TODOS</button>
+            <button class="tbtn" onclick="filterLogs('all')" id="fl-all" style="border-color:var(--neon);color:var(--neon)">TODOS</button>
             <button class="tbtn" onclick="filterLogs('error')" id="fl-err">ERROS</button>
             <button class="tbtn" onclick="clearLogs()">LIMPAR</button>
           </div>
         </div>
-        <div id="logList" style="font-family:'Share Tech Mono',monospace;font-size:11px;padding:12px 20px;overflow-y:auto;height:calc(100vh - 160px);">
+        <div id="logList" style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:12px 20px;overflow-y:auto;height:calc(100vh - 160px);">
         </div>
       </div>
     </div>
@@ -698,12 +762,17 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 // ── CONFIG ──────────────────────────────────────────────────────────────────
 const PASS = '200817';
 
-// Quando rodando dentro do Electron (file://), location.origin = 'null'
-// Nesse caso, aponta para o backend Python em localhost:8765
-const IS_ELECTRON = typeof window.electronAPI !== 'undefined' || window.location.protocol === 'file:';
-const BACKEND_HOST = 'localhost:8765';
-const API_BASE = IS_ELECTRON ? `http://${BACKEND_HOST}` : window.location.origin;
-const WS_URL   = IS_ELECTRON ? `ws://${BACKEND_HOST}/ws` : `ws://${window.location.host}/ws`;
+// Fix: use proper backend detection and connection
+const API_BASE = window.location.origin === 'null' || window.location.protocol === 'file:'
+  ? 'http://localhost:8765'
+  : window.location.origin;
+const WS_URL   = API_BASE.replace(/^http/, 'ws') + '/ws';
+
+// Override for Electron
+if (typeof window.electronAPI !== 'undefined') {
+  API_BASE = 'http://localhost:8765';
+  WS_URL   = 'ws://localhost:8765/ws';
+}
 
 let convHistory = [];
 let isProc = false;
@@ -711,7 +780,7 @@ let eyeVis = false;
 let currentPanel = 'chat';
 let totalTokens = 0;
 let logEntries = [];
-let ttsEngine = 'edge';
+let ttsEngine = 'xtts';
 let selectedVoice = 'pt-BR-FranciscaNeural';
 let customSystemPrompt = '';
 let memEntries = [];
@@ -728,6 +797,10 @@ async function apiPost(path, body) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status}: ${errText || res.statusText}`);
+    }
     return await res.json();
   } catch (e) {
     addLog('ERROR', 'Falha na requisição: ' + e.message, 'red');
@@ -738,6 +811,10 @@ async function apiPost(path, body) {
 async function apiGet(path) {
   try {
     const res = await fetch(API_BASE + path);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error(`HTTP ${res.status}: ${errText || res.statusText}`);
+    }
     return await res.json();
   } catch (e) {
     addLog('ERROR', 'Falha na requisição: ' + e.message, 'red');
@@ -755,7 +832,7 @@ function connectWS() {
     ws.onopen = () => {
       addLog('INFO', '✅ WebSocket conectado ao backend', 'green');
       document.getElementById('sysDot').style.background = 'var(--green)';
-      document.getElementById('sysDot').style.boxShadow = '0 0 8px var(--green)';
+      document.getElementById('sysDot').style.boxShadow = '0 0 10px var(--green), 0 0 20px var(--green)';
       document.getElementById('sysTxt').innerHTML = 'BACKEND CONECTADO<br>WebSocket ativo';
       if (wsReconnectTimer) { clearTimeout(wsReconnectTimer); wsReconnectTimer = null; }
     };
@@ -772,7 +849,7 @@ function connectWS() {
     ws.onclose = () => {
       addLog('WARN', 'WebSocket desconectado — reconectando em 3s...', 'yellow');
       document.getElementById('sysDot').style.background = 'var(--yellow)';
-      document.getElementById('sysDot').style.boxShadow = '0 0 8px var(--yellow)';
+      document.getElementById('sysDot').style.boxShadow = '0 0 10px var(--yellow), 0 0 20px var(--yellow)';
       document.getElementById('sysTxt').innerHTML = 'RECONECTANDO...<br>Aguardando backend';
       wsReconnectTimer = setTimeout(connectWS, 3000);
     };
@@ -797,7 +874,6 @@ function handleWSMessage(data) {
       break;
 
     case 'response':
-      // Resposta do chat via WS — não duplicar se já foi adicionado pelo REST
       break;
 
     case 'chat':
@@ -842,22 +918,22 @@ function updateStatusDot(status) {
   switch (status) {
     case 'online':
       dot.style.background = 'var(--green)';
-      dot.style.boxShadow = '0 0 8px var(--green)';
+      dot.style.boxShadow = '0 0 10px var(--green), 0 0 20px var(--green)';
       txt.innerHTML = 'SYSTEM ONLINE<br>Conexão Estável';
       break;
     case 'processing':
       dot.style.background = 'var(--yellow)';
-      dot.style.boxShadow = '0 0 8px var(--yellow)';
+      dot.style.boxShadow = '0 0 10px var(--yellow), 0 0 20px var(--yellow)';
       txt.innerHTML = 'PROCESSANDO...<br>Shaz está pensando';
       break;
     case 'listening':
       dot.style.background = 'var(--cyan)';
-      dot.style.boxShadow = '0 0 8px var(--cyan)';
+      dot.style.boxShadow = '0 0 10px var(--cyan), 0 0 20px var(--cyan)';
       txt.innerHTML = 'ESCUTANDO...<br>Microfone ativo';
       break;
     case 'speaking':
-      dot.style.background = 'var(--pink)';
-      dot.style.boxShadow = '0 0 8px var(--pink)';
+      dot.style.background = 'var(--neon)';
+      dot.style.boxShadow = '0 0 10px var(--neon), 0 0 20px var(--neon)';
       txt.innerHTML = 'FALANDO...<br>TTS em execução';
       break;
     default:
@@ -884,7 +960,7 @@ function chkPass(){
     monitorInterval = setInterval(updateFromBackend, 5000);
     
     addLog('SYSTEM','🎯 Conectando ao backend Python...','green');
-    addLog('INFO','Servidor: ' + window.location.host, 'cyan');
+    addLog('INFO','Servidor: ' + API_BASE, 'cyan');
     addLog('INFO','WebSocket: ' + WS_URL, 'cyan');
     
     setTimeout(()=>document.getElementById('passModal').style.display='none',700);
@@ -1019,12 +1095,12 @@ async function updateFromBackend() {
 function renderMemory() {
   const el = document.getElementById('mem-list');
   if (!memEntries || memEntries.length === 0) {
-    el.innerHTML = '<div class="mem-entry"><span class="mem-type tp">—</span><div><div class="mem-content" style="color:var(--muted)">Nenhuma memória registrada</div></div></div>';
+    el.innerHTML = '<div class="mem-entry"><span class="mem-type" style="font-family:\'JetBrains Mono\',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;background:rgba(0,212,255,0.1);color:var(--neon);border:1px solid rgba(0,212,255,0.25)">—</span><div><div class="mem-content" style="color:var(--muted)">Nenhuma memória registrada</div></div></div>';
     document.getElementById('mem-count').textContent = '0';
     document.getElementById('msg-count').textContent = convHistory.length;
     return;
   }
-  el.innerHTML = memEntries.map(m => `<div class="mem-entry"><span class="mem-type tp" style="font-family:'Share Tech Mono',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;background:rgba(255,79,163,0.15);color:var(--pink);border:1px solid rgba(255,79,163,0.3)">${m.type || 'general'}</span><div><div class="mem-content">${m.content || ''}</div><div class="mem-time">${m.time || ''}</div></div></div>`).join('');
+  el.innerHTML = memEntries.map(m => `<div class="mem-entry"><span class="mem-type" style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;background:rgba(0,212,255,0.1);color:var(--neon);border:1px solid rgba(0,212,255,0.25)">${m.type || 'general'}</span><div><div class="mem-content">${m.content || ''}</div><div class="mem-time">${m.time || ''}</div></div></div>`).join('');
   document.getElementById('mem-count').textContent = memEntries.length;
   document.getElementById('msg-count').textContent = convHistory.length;
 }
@@ -1080,7 +1156,7 @@ function renderProviders(data) {
 // ── LOGS ─────────────────────────────────────────────────────────────────────
 let logFilter = 'all';
 function addLog(level, msg, color) {
-  const colors = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',cyan:'var(--cyan)',pink:'var(--pink)',white:'var(--text)'};
+  const colors = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',cyan:'var(--cyan)',blue:'var(--neon)',white:'var(--text)'};
   const c = colors[color] || 'var(--muted)';
   logEntries.unshift({level, msg, color: c, time: new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});
   if (logEntries.length > 200) logEntries.pop();
@@ -1089,7 +1165,7 @@ function addLog(level, msg, color) {
   // Mirror to terminal
   const t = document.getElementById('termOut');
   if (t) {
-    const lc = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',cyan:'var(--cyan)',pink:'var(--pink)'};
+    const lc = {green:'var(--green)',red:'var(--red)',yellow:'var(--yellow)',cyan:'var(--cyan)',blue:'var(--neon)'};
     t.innerHTML += `<span style="color:${lc[color]||'var(--muted)'}">[${level}]</span> ${msg}<br>`;
     t.scrollTop = t.scrollHeight;
   }
@@ -1102,8 +1178,8 @@ function renderLogs() {
 }
 function filterLogs(f) {
   logFilter = f;
-  document.getElementById('fl-all').style.borderColor = f === 'all' ? 'var(--pink)' : 'var(--border)';
-  document.getElementById('fl-all').style.color = f === 'all' ? 'var(--pink)' : 'var(--muted)';
+  document.getElementById('fl-all').style.borderColor = f === 'all' ? 'var(--neon)' : 'var(--border)';
+  document.getElementById('fl-all').style.color = f === 'all' ? 'var(--neon)' : 'var(--muted)';
   document.getElementById('fl-err').style.borderColor = f === 'error' ? 'var(--red)' : 'var(--border)';
   document.getElementById('fl-err').style.color = f === 'error' ? 'var(--red)' : 'var(--muted)';
   renderLogs();
@@ -1121,7 +1197,7 @@ function clearTerminal() {
 // ── ENGINE / VOICE ────────────────────────────────────────────────────────────
 async function setEngine(e, btn) {
   ttsEngine = e;
-  ['edge','piper','xtts'].forEach(k => {
+  ['xtts','edge','piper'].forEach(k => {
     const b = document.getElementById('eng-'+k);
     if (b) { b.classList.remove('active'); b.textContent = b.textContent.replace(' ✓',''); }
   });
@@ -1130,6 +1206,12 @@ async function setEngine(e, btn) {
   // Envia para o backend
   await apiPost('/api/engine/set', { engine: e });
   addLog('INFO', 'Engine TTS: ' + e, 'cyan');
+}
+
+function setEngineSelect(v) {
+  // Find and click the matching engine button
+  const btn = document.getElementById('eng-' + v);
+  if (btn) setEngine(v, btn);
 }
 
 async function setVoice(v) {
@@ -1239,11 +1321,11 @@ function appendAI(text) {
   const mc = document.createElement('div');
   mc.className = 'info-card';
   const memTags = memEntries.length > 0
-    ? memEntries.slice(0, 3).map(m => `<span class="tag tp">${m.type || 'memória'}</span>`).join('')
-    : '<span class="tag tp">Nenhuma memória ainda</span>';
+    ? memEntries.slice(0, 3).map(m => `<span class="tag tb">${m.type || 'memória'}</span>`).join('')
+    : '<span class="tag tb">Nenhuma memória ainda</span>';
   mc.innerHTML = `
     <div class="card-hdr" onclick="toggleCard(this)">
-      <div class="card-left"><div class="cardot dp"></div><span style="color:var(--pink)">MEMÓRIA USADA</span><span class="ccount">${memEntries.length} lembranças</span></div>
+      <div class="card-left"><div class="cardot db"></div><span style="color:var(--neon)">MEMÓRIA USADA</span><span class="ccount">${memEntries.length} lembranças</span></div>
       <span class="chev">▼</span>
     </div>
     <div class="card-body"><div class="tag-row">${memTags}</div></div>
@@ -1270,7 +1352,7 @@ function appendAI(text) {
         <button class="cbtn">⏮</button>
         <button class="playbtn" onclick="testBackendVoice()">▶</button>
         <button class="cbtn">⏭</button>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted)">1x</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">1x</span>
         <button class="cbtn">🔊</button>
       </div>
     </div>
@@ -1383,7 +1465,7 @@ async function toggleVoiceMode() {
     const result = await apiPost('/api/voice/start', {});
     if (result && result.status === 'ok') {
       btn.textContent = '🔴 DESLIGAR VOZ';
-      btn.style.borderColor = 'rgba(239,68,68,0.4)';
+      btn.style.borderColor = 'rgba(255,51,85,0.4)';
       btn.style.color = 'var(--red)';
       btn.style.animation = 'blink 1s ease-in-out infinite';
       addLog('VOICE', '🎤 Modo de voz ATIVADO — falando com a Shaz!', 'cyan');
@@ -1396,8 +1478,8 @@ async function toggleVoiceMode() {
     const result = await apiPost('/api/voice/stop', {});
     if (result && result.status === 'ok') {
       btn.textContent = '🎤 LIGAR VOZ';
-      btn.style.borderColor = 'rgba(6,182,212,0.3)';
-      btn.style.color = 'var(--cyan)';
+      btn.style.borderColor = 'rgba(0,212,255,0.3)';
+      btn.style.color = 'var(--neon)';
       btn.style.animation = 'none';
       addLog('VOICE', '🔇 Modo de voz DESATIVADO', 'yellow');
     } else {
@@ -1430,7 +1512,7 @@ function termAppendLine(text, type = 'out') {
 
 function termColorize(text) {
   // Escapa HTML
-  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safe = text.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>');
   // Destaca paths, erros, warnings, etc.
   return safe
     .replace(/(ERROR|ERRO|Exception|Traceback)/gi, '<span style="color:var(--red);font-weight:700">$1</span>')
@@ -1594,8 +1676,8 @@ async function discordStatus() {
     document.getElementById('discordStartBtn').style.opacity = '0.5';
     document.getElementById('discordNavBadge').textContent = 'ON';
     document.getElementById('discordNavBadge').style.color = 'var(--green)';
-    document.getElementById('discordNavBadge').style.borderColor = 'rgba(16,185,129,0.4)';
-    document.getElementById('discordNavBadge').style.background = 'rgba(16,185,129,0.15)';
+    document.getElementById('discordNavBadge').style.borderColor = 'rgba(0,255,136,0.3)';
+    document.getElementById('discordNavBadge').style.background = 'rgba(0,255,136,0.1)';
     document.getElementById('discordThreadStatus').textContent = 'Ativa (thread)';
     document.getElementById('discordErrorMsg').innerHTML = 'Bot Discord está rodando na thread.<br>Use <span style="color:var(--red)">⏹ PARAR</span> para desligar.';
     document.getElementById('discordErrorMsg').style.color = 'var(--green)';
@@ -1609,8 +1691,8 @@ async function discordStatus() {
     document.getElementById('discordStartBtn').style.opacity = '1';
     document.getElementById('discordNavBadge').textContent = 'OFF';
     document.getElementById('discordNavBadge').style.color = 'var(--yellow)';
-    document.getElementById('discordNavBadge').style.borderColor = 'rgba(245,158,11,0.3)';
-    document.getElementById('discordNavBadge').style.background = 'rgba(245,158,11,0.12)';
+    document.getElementById('discordNavBadge').style.borderColor = 'rgba(255,215,0,0.2)';
+    document.getElementById('discordNavBadge').style.background = 'rgba(255,215,0,0.08)';
     document.getElementById('discordThreadStatus').textContent = 'Parada';
     
     if (error) {

@@ -223,9 +223,9 @@ class TTSManager:
 
     def __init__(self, config: Optional[Config] = None) -> None:
         self._config = config or Config()
-        # Edge TTS como primário — mais confiável, funciona sem build tools
-        self._fallback_chain = ["edge", "piper", "xtts"]
-        self._current_engine = "edge"
+        # Coqui XTTS v2 como primário — qualidade superior de voz
+        self._fallback_chain = ["xtts", "edge", "piper"]
+        self._current_engine = "xtts"
 
         self._synthesizers = {
             "xtts": XTTSSynthesizer(config),
@@ -236,7 +236,7 @@ class TTSManager:
         # VoiceMeeter: nome do dispositivo de saída (None = padrão do sistema)
         self._output_device: Optional[str] = None
 
-        logger.tts(f"TTSManager iniciado | primário: {self._current_engine} | fallback: {self._fallback_chain}")
+        logger.tts(f"TTSManager iniciado | primário: Coqui XTTS v2 | fallback: {self._fallback_chain}")
 
     def set_voicemeeter_output(self, device_name: Optional[str]) -> None:
         """

@@ -60,6 +60,7 @@ class ShazBot(commands.Bot):
             "discord_bot.bot.cogs.tools_cog",
             "discord_bot.bot.cogs.voice_cog",
             "discord_bot.bot.cogs.status_cog",
+            "discord_bot.bot.cogs.video_cog",
         ]
 
         for ext in extensions:

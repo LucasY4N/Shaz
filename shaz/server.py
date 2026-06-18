@@ -850,6 +850,16 @@ async def websocket_endpoint(ws: WebSocket):
         logger.info(f"[WS] Cliente desconectado ({len(_ws_clients)} restantes)")
 
 
+# ─── Serve static assets ──────────────────────────────────────────────────
+from fastapi.staticfiles import StaticFiles as FastAPIStaticFiles
+_assets_path = _root / "assets"
+if _assets_path.exists():
+    try:
+        app.mount("/assets", FastAPIStaticFiles(directory=str(_assets_path)), name="assets")
+        logger.info(f"[Server] Assets mounted from {_assets_path}")
+    except Exception as e:
+        logger.warning(f"[Server] Could not mount assets: {e}")
+
 # ─── Sirve o HTML diretamente ────────────────────────────────────────────
 _html_path = _root / "shaz-terminal.html"
 

@@ -192,8 +192,18 @@ async def root() -> dict:
     return {"status": "online", "app": "Shaz AI", "version": settings.app_version}
 
 
+# ── Serve static assets ────────────────────────────────────────────────────
+from fastapi.staticfiles import StaticFiles
+
+_assets_path = Path(__file__).parent.parent / "assets"
+log.info(f"Assets path: {_assets_path} (exists: {_assets_path.exists()})")
+if _assets_path.exists():
+    app.mount("/assets", StaticFiles(directory=str(_assets_path)), name="assets")
+else:
+    log.warning(f"Assets directory not found at {_assets_path}")
+
 # ── Serve HTML ────────────────────────────────────────────────────────────
-_html_path = _root / "shaz-terminal.html"
+_html_path = Path(__file__).parent.parent / "shaz-terminal.html"
 
 @app.get("/app")
 async def serve_html():

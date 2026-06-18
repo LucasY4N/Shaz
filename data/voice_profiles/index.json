@@ -7,5 +7,14 @@
     "created_at": "2026-06-11T21:19:35.701936",
     "duration_seconds": 39.183673469387756,
     "description": ""
+  },
+  "9ed629cb": {
+    "id": "9ed629cb",
+    "name": "Shaz Clonada",
+    "reference_wav": "data\\voice_profiles\\9ed629cb\\reference.wav",
+    "language": "pt",
+    "created_at": "2026-06-17T22:36:58.450325",
+    "duration_seconds": 15.777959183673469,
+    "description": ""
   }
 }
