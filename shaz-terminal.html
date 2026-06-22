@@ -592,18 +592,87 @@ box-shadow:0 0 6px currentColor;}
     <!-- ── CONEXÕES ── -->
     <div class="panel" id="panel-conexoes">
       <div class="panel-inner">
-        <div class="p-title">⚡ CONEXÕES — Provedores LLM</div>
+        <div class="p-title">⚡ CONEXÕES — Provedores & Voz</div>
+
+        <!-- Provedores LLM -->
         <div class="p-card">
-          <div class="p-card-title">Provedores Disponíveis</div>
+          <div class="p-card-title">Provedores LLM Disponíveis</div>
           <div id="provider-list">
-            <div class="provider-row"><span class="provider-name">Carregando...</span><span class="provider-status">● Aguardando</span></div>
+            <div class="provider-row">
+              <span class="provider-name">Carregando...</span>
+              <span class="provider-status">● Aguardando</span>
+            </div>
           </div>
         </div>
+
+        <!-- Voz Clonada -->
         <div class="p-card">
-          <div class="p-card-title">🎙 Configuração de Áudio</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Áudio gerenciado pelo backend Python (fala local).</div>
-          <button class="action-btn abtn-blue" onclick="testBackendVoice()">🔊 Testar Voz no Backend</button>
+          <div class="p-card-title">🎤 Voz Clonada (XTTS-v2)</div>
+
+          <!-- Voz Ativa -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+            <span class="provider-name">Voz Ativa</span>
+            <span class="provider-status ps-ok" id="active-voice-badge" style="max-width:180px;overflow:hidden;text-overflow:ellipsis">● Padrão (Edge TTS)</span>
+          </div>
+
+          <!-- Upload de áudio para clonar -->
+          <div style="margin:12px 0 8px">
+            <label style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px;display:block;margin-bottom:6px">CLONAR NOVA VOZ</label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="file" id="voiceFileInput" accept=".wav,.mp3,.ogg,.flac,.m4a"
+                style="display:none" onchange="onVoiceFileSelected(this)"/>
+              <button class="action-btn abtn-outline" style="flex:1;margin-top:0;padding:8px"
+                onclick="document.getElementById('voiceFileInput').click()">
+                📁 Selecionar Áudio de Referência
+              </button>
+            </div>
+            <div id="selectedFileName" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;height:14px"></div>
+
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+              <input id="cloneVoiceName" type="text" placeholder="Nome da voz..."
+                style="flex:1;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;"/>
+              <button class="action-btn abtn-pink" id="cloneBtn" style="margin-top:0;padding:8px 16px;white-space:nowrap"
+                onclick="cloneVoice()" disabled>
+                ✂ CLONAR
+              </button>
+            </div>
+            <div id="cloneProgress" style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--yellow);margin-top:6px;height:14px"></div>
+          </div>
+
+          <!-- Lista de vozes -->
+          <div style="margin-top:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <label style="font-size:11px;color:var(--muted);font-family:'Share Tech Mono',monospace;letter-spacing:1px">VOZES SALVAS</label>
+              <button class="tbtn" onclick="loadClonedVoices()" style="padding:2px 8px;font-size:9px">↺ ATUALIZAR</button>
+            </div>
+            <div id="cloned-voices-list" style="max-height:180px;overflow-y:auto">
+              <div style="color:var(--muted);font-size:12px;padding:8px 0">Carregando...</div>
+            </div>
+          </div>
+
+          <!-- Botões de ação de voz -->
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <button class="action-btn abtn-pink" style="flex:1;margin-top:0;padding:8px"
+              onclick="testVoiceSpeak()">🔊 Testar Voz Ativa</button>
+            <button class="action-btn abtn-outline" style="flex:1;margin-top:0;padding:8px"
+              onclick="resetToDefaultVoice()">↩ Voltar ao Padrão</button>
+          </div>
         </div>
+
+        <!-- Áudio direto (falar um texto) -->
+        <div class="p-card">
+          <div class="p-card-title">💬 Falar Texto com Voz da Shaz</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">
+            A Shaz só fala quando você pedir explicitamente — sem auto-fala.
+          </div>
+          <textarea id="speakTextArea" rows="3"
+            style="width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;outline:none;resize:vertical;"
+            placeholder="Digite o texto que a Shaz deve falar..."></textarea>
+          <button class="action-btn abtn-pink" style="margin-top:8px" onclick="speakTextNow()">
+            🔊 FALAR AGORA
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -1746,6 +1815,195 @@ async function discordStop() {
   document.getElementById('discordStopBtn').disabled = false;
   document.getElementById('discordStopBtn').textContent = '⏹ PARAR DISCORD BOT';
 }
+
+// ── VOZ CLONADA ──────────────────────────────────────────────────────────────
+let selectedVoiceFile = null;
+let activeClonedVoiceId = null;
+
+// Carrega lista de vozes clonadas do servidor
+async function loadClonedVoices() {
+  const list = document.getElementById('cloned-voices-list');
+  if (!list) return;
+  const data = await apiGet('/api/voice/cloned/list');
+  if (!data || !data.profiles) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Nenhuma voz clonada. Clone uma abaixo.</div>';
+    return;
+  }
+  activeClonedVoiceId = data.active_id;
+  if (data.profiles.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">Nenhuma voz clonada ainda.</div>';
+    return;
+  }
+  list.innerHTML = data.profiles.map(p => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:${p.active ? 'rgba(255,79,163,0.08)' : 'var(--bg-panel)'};border:1px solid ${p.active ? 'rgba(255,79,163,0.4)' : 'var(--border)'};border-radius:8px;margin-bottom:6px;">
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-weight:700;color:${p.active ? 'var(--pink)' : 'var(--text)'};font-size:13px">${p.name}</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted)">${p.id} · ${p.language} · ${p.duration.toFixed(1)}s</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="vm-btn ${p.active ? 'sel' : ''}" onclick="selectClonedVoice('${p.id}','${p.name}')">${p.active ? '✓ ATIVA' : 'ATIVAR'}</button>
+        <button class="vm-btn" onclick="testClonedVoice('${p.id}')" style="color:var(--cyan)">🔊</button>
+        <button class="vm-btn" onclick="deleteClonedVoice('${p.id}','${p.name}')" style="color:var(--red)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+  // Atualiza badge ativo
+  const badge = document.getElementById('active-voice-badge');
+  if (badge) {
+    const active = data.profiles.find(p => p.active);
+    badge.textContent = active ? `● ${active.name}` : '● Padrão (Edge TTS)';
+    badge.className = 'provider-status ' + (active ? 'ps-primary' : 'ps-ok');
+  }
+}
+
+async function selectClonedVoice(profileId, name) {
+  const result = await apiPost('/api/voice/cloned/select', { profile_id: profileId });
+  if (result && result.status === 'ok') {
+    addLog('VOICE', `✅ Voz '${name}' ativada!`, 'green');
+    activeClonedVoiceId = profileId;
+    loadClonedVoices();
+  } else {
+    addLog('ERROR', 'Erro ao ativar voz: ' + (result?.message || '?'), 'red');
+  }
+}
+
+async function resetToDefaultVoice() {
+  const result = await apiPost('/api/voice/cloned/select', { profile_id: '' });
+  if (result) {
+    addLog('VOICE', 'Voltando para Edge TTS padrão', 'cyan');
+    activeClonedVoiceId = null;
+    loadClonedVoices();
+  }
+}
+
+async function testClonedVoice(profileId) {
+  addLog('VOICE', 'Testando voz clonada...', 'cyan');
+  const result = await apiPost('/api/voice/cloned/test', { profile_id: profileId });
+  if (result && result.status === 'ok') {
+    addLog('VOICE', `✅ Teste concluído (${result.bytes} bytes)`, 'green');
+  } else {
+    addLog('ERROR', 'Erro no teste: ' + (result?.message || 'sem resposta'), 'red');
+  }
+}
+
+async function deleteClonedVoice(profileId, name) {
+  if (!confirm(`Deletar a voz '${name}'?`)) return;
+  const result = await apiPost('/api/voice/cloned/delete', { profile_id: profileId });
+  if (result && result.status === 'ok') {
+    addLog('VOICE', `Voz '${name}' removida.`, 'yellow');
+    loadClonedVoices();
+  }
+}
+
+function onVoiceFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedVoiceFile = file;
+  const el = document.getElementById('selectedFileName');
+  if (el) el.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+  const btn = document.getElementById('cloneBtn');
+  if (btn) btn.disabled = false;
+}
+
+async function cloneVoice() {
+  if (!selectedVoiceFile) return;
+  const name = document.getElementById('cloneVoiceName').value.trim() || selectedVoiceFile.name.split('.')[0];
+  const progress = document.getElementById('cloneProgress');
+  const btn = document.getElementById('cloneBtn');
+  if (progress) progress.textContent = '⏳ Convertendo áudio e carregando XTTS-v2... (~30s)';
+  if (btn) btn.disabled = true;
+  addLog('VOICE', `Clonando voz '${name}'... (XTTS-v2 pode demorar ~30s na primeira vez)`, 'yellow');
+
+  try {
+    // Lê o arquivo como base64
+    const base64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = () => res(reader.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(selectedVoiceFile);
+    });
+
+    const result = await apiPost('/api/voice/cloned/create', {
+      audio_base64: base64,
+      name: name,
+      language: 'pt',
+    });
+
+    if (result && result.status === 'ok') {
+      if (progress) progress.textContent = `✅ Voz '${result.profile.name}' criada! ID: ${result.profile.id}`;
+      addLog('VOICE', `✅ Voz '${name}' clonada! ID: ${result.profile.id}`, 'green');
+      loadClonedVoices();
+    } else {
+      if (progress) progress.textContent = `❌ ${result?.message || 'Erro'}`;
+      addLog('ERROR', 'Erro ao clonar: ' + (result?.message || '?'), 'red');
+    }
+  } catch (e) {
+    if (progress) progress.textContent = `❌ Erro: ${e.message}`;
+    addLog('ERROR', 'Erro ao clonar: ' + e.message, 'red');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function speakTextNow() {
+  const text = document.getElementById('speakTextArea').value.trim();
+  if (!text) return;
+  addLog('VOICE', `🔊 Falando: "${text.slice(0,60)}..."`, 'cyan');
+  showStopButton(true);
+  const result = await apiPost('/api/voice/speak', { message: text });
+  showStopButton(false);
+  if (result && result.status === 'ok') {
+    addLog('VOICE', `✅ Fala concluída (${result.bytes} bytes)`, 'green');
+  } else {
+    addLog('ERROR', 'Erro na fala: ' + (result?.message || '?'), 'red');
+  }
+}
+
+async function testVoiceSpeak() {
+  const text = 'Olá! Eu sou a Shaz. Testando minha voz atual.';
+  showStopButton(true);
+  const result = await apiPost('/api/voice/speak', { message: text });
+  showStopButton(false);
+  if (result?.status === 'ok') {
+    addLog('VOICE', '✅ Teste de voz OK', 'green');
+  } else {
+    addLog('ERROR', 'Erro no teste: ' + (result?.message || '?'), 'red');
+  }
+}
+
+// Carrega vozes quando abre o painel de conexões
+const _origGoPanel = window.goPanel;
+window.goPanel = function(id, el) {
+  _origGoPanel(id, el);
+  if (id === 'conexoes') {
+    loadClonedVoices();
+  }
+};
+
+// Carrega vozes também na init
+const _origLoadInitialData = window.loadInitialData;
+window.loadInitialData = async function() {
+  if (_origLoadInitialData) await _origLoadInitialData();
+  loadClonedVoices();
+};
+
+// WS: atualiza quando voz é clonada ou alterada
+const _origHandleWSMessage = window.handleWSMessage;
+window.handleWSMessage = function(data) {
+  if (_origHandleWSMessage) _origHandleWSMessage(data);
+  if (data.type === 'voice_cloned' || data.type === 'voice_changed') {
+    loadClonedVoices();
+    if (data.type === 'voice_changed') {
+      addLog('VOICE', `Voz alterada: ${data.voice} ${data.cloned ? '(clonada)' : '(padrão)'}`, 'cyan');
+    }
+  }
+  if (data.type === 'speaking_started') {
+    showStopButton(true);
+  }
+  if (data.type === 'speaking_stopped') {
+    showStopButton(false);
+  }
+};
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = () => {
